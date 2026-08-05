@@ -3,7 +3,7 @@ import { persistenceActor, effectKey } from "./persistence.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-const FLAG_NAMESPACE = "my-tracker";
+const FLAG_NAMESPACE = "clustersomnia";
 
 export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(actor, options = {}) {

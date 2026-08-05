@@ -1,9 +1,32 @@
 import { TrackerApp } from "./tracker-app.js";
 
-const FLAG_NAMESPACE = "my-tracker";
+const FLAG_NAMESPACE = "clustersomnia";
+const LEGACY_FLAG_NAMESPACE = "my-tracker";
 
 Hooks.once("init", () => {
   console.log(`${FLAG_NAMESPACE} | Initializing SotDL Tracker`);
+});
+
+// One-time migration: tracker data used to live under the standalone
+// "my-tracker" module's flag scope. That module no longer exists, so
+// Foundry rejects reads/writes against it — copy any leftover data across.
+Hooks.once("ready", async () => {
+  if (!game.user.isGM) return;
+  for (const actor of game.actors) {
+    const legacy = foundry.utils.getProperty(actor, `flags.${LEGACY_FLAG_NAMESPACE}`);
+    if (!legacy) continue;
+
+    const updates = {};
+    if (legacy.counters !== undefined && foundry.utils.getProperty(actor, `flags.${FLAG_NAMESPACE}.counters`) === undefined) {
+      updates[`flags.${FLAG_NAMESPACE}.counters`] = legacy.counters;
+    }
+    if (legacy.displayedEffectIds !== undefined && foundry.utils.getProperty(actor, `flags.${FLAG_NAMESPACE}.displayedEffectIds`) === undefined) {
+      updates[`flags.${FLAG_NAMESPACE}.displayedEffectIds`] = legacy.displayedEffectIds;
+    }
+    if (Object.keys(updates).length) {
+      await actor.update(updates);
+    }
+  }
 });
 
 Hooks.on("renderTokenHUD", (hud, html, _data) => {
