@@ -1,0 +1,19 @@
+<div class="sotdl-effects-config">
+  <ul class="sotdl-effects-config-list">
+    {{#each effects as |effect|}}
+    <li class="sotdl-effects-config-row">
+      <label class="sotdl-effects-config-label">
+        <input type="checkbox" class="sotdl-effects-config-checkbox" name="effect" value="{{effect.key}}" {{#if effect.checked}}checked{{/if}}>
+        <img class="sotdl-effects-config-img" src="{{effect.img}}">
+        <span class="sotdl-effects-config-name">{{effect.name}}</span>
+      </label>
+    </li>
+    {{else}}
+    <li class="sotdl-effects-config-empty">No effects found on this character.</li>
+    {{/each}}
+  </ul>
+  <footer class="sotdl-effects-config-footer">
+    <button type="button" data-action="save">Save</button>
+    <button type="button" data-action="cancel">Cancel</button>
+  </footer>
+</div>

@@ -1,0 +1,249 @@
+.sotdl-tracker {
+  padding: 8px;
+}
+
+.sotdl-tracker-hp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sotdl-tracker-hp-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sotdl-tracker-hp-value {
+  min-width: 4em;
+  text-align: center;
+  font-weight: bold;
+}
+
+.sotdl-tracker-counters {
+  margin-top: 10px;
+}
+
+.sotdl-counter-list {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sotdl-counter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sotdl-counter-name {
+  flex: 1 1 auto;
+  min-width: 1px;
+}
+
+.sotdl-counter-delta {
+  flex: 0 0 auto;
+  width: 2em !important;
+}
+
+.sotdl-counter-fraction {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sotdl-counter-value {
+  min-width: 1.5em;
+  text-align: right;
+  font-weight: bold;
+}
+
+.sotdl-counter-sep {
+  opacity: 0.7;
+}
+
+.sotdl-counter-max {
+  flex: 0 0 auto;
+  width: 3em !important;
+  text-align: center;
+  padding: 0 2px;
+  -moz-appearance: textfield;
+}
+
+.sotdl-counter-max::-webkit-outer-spin-button,
+.sotdl-counter-max::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.sotdl-counter-remove {
+  flex: 0 0 auto;
+  width: 2em !important;
+  height: 2em !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.fas.fa-trash {
+  margin-right: 0px !important;
+}
+
+.sotdl-tracker-effects {
+  margin-top: 10px;
+}
+
+.sotdl-effect-list {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0px !important;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sotdl-effect-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 1 auto;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.sotdl-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sotdl-effects-config {
+  flex: 0 0 auto;
+  width: 2em !important;
+  height: 2em !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 4px;
+}
+
+.sotdl-effect-toggle {
+  width: auto !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  background: none;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sotdl-effect-toggle.sotdl-effect-disabled {
+  opacity: 0.4;
+}
+
+.sotdl-effect-img {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+
+.sotdl-effect-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Effects config window (EffectsConfigApp) */
+
+.sotdl-effects-config-app .window-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sotdl-effects-config {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px;
+  gap: 8px;
+}
+
+.sotdl-effects-config-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 700px !important;
+  padding-left: 340px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sotdl-effects-config-row {
+  flex: 0 0 auto;
+    width: 250px;
+}
+
+.sotdl-effects-config-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 250px;
+  min-height: 32px;
+  padding: 2px 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.sotdl-effects-config-checkbox {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.sotdl-effects-config-img {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.sotdl-effects-config-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sotdl-effects-config-empty {
+  opacity: 0.7;
+  padding: 8px 4px;
+}
+
+.sotdl-effects-config-footer {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  width: fit-content !important;
+  padding-left: 180px !important;
+}
+
+.sotdl-effects-config-footer button {
+  flex: 1;
+}

@@ -1,0 +1,49 @@
+<div class="sotdl-tracker">
+  <section class="sotdl-tracker-hp">
+    <label>HP</label>
+    <div class="sotdl-tracker-hp-controls">
+      <button type="button" data-action="hpDelta" data-delta="-1">−1</button>
+      <span class="sotdl-tracker-hp-value">{{health.value}} / {{health.max}}</span>
+      <button type="button" data-action="hpDelta" data-delta="1">+1</button>
+    </div>
+  </section>
+
+  <section class="sotdl-tracker-counters">
+    <ul class="sotdl-counter-list">
+      {{#each counters as |counter|}}
+      <li class="sotdl-counter-row" data-counter-row data-counter-id="{{counter.id}}">
+        <input type="text" class="sotdl-counter-name" value="{{counter.name}}">
+        <button type="button" class="sotdl-counter-delta" data-action="counterDelta" data-counter-id="{{counter.id}}" data-delta="-1">−</button>
+        <div class="sotdl-counter-fraction">
+          <span class="sotdl-counter-value">{{counter.value}}</span>
+          <span class="sotdl-counter-sep">/</span>
+          <input type="number" class="sotdl-counter-max" value="{{counter.max}}" placeholder="∞">
+        </div>
+        <button type="button" class="sotdl-counter-delta" data-action="counterDelta" data-counter-id="{{counter.id}}" data-delta="1">+</button>
+        <button type="button" class="sotdl-counter-remove" data-action="counterRemove" data-counter-id="{{counter.id}}" title="Remove counter">
+          <i class="fas fa-trash"></i>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    <button type="button" data-action="counterAdd">+ Add Counter</button>
+  </section>
+
+  <section class="sotdl-tracker-effects">
+    <div class="sotdl-section-header">
+      <button type="button" class="sotdl-effects-config" data-action="effectsConfig" title="Configure tracked effects">
+        Search Effects
+      </button>
+    </div>
+    <ul class="sotdl-effect-list">
+      {{#each effects as |effect|}}
+      <li class="sotdl-effect-row" data-effect-uuid="{{effect.uuid}}">
+        <button type="button" class="sotdl-effect-toggle{{#if effect.disabled}} sotdl-effect-disabled{{/if}}" data-action="effectToggle" data-effect-uuid="{{effect.uuid}}" title="Toggle effect">
+          <img class="sotdl-effect-img" src="{{effect.img}}">
+          <span class="sotdl-effect-name">{{effect.name}}</span>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+</div>

@@ -1,0 +1,100 @@
+{
+  "id": "clustersomnia",
+  "title": "ClusterSomnia",
+  "description": "Compendium packs and HP/counter/effect tracker for Shadow of the Demon Lord.",
+  "version": "1.1.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "esmodules": [
+    "scripts/module.js"
+  ],
+  "styles": [
+    "styles/tracker.css"
+  ],
+  "authors": [
+    {
+      "name": "Daniele"
+    }
+  ],
+  "packs": [
+    {
+      "name": "spells",
+      "label": "Spells",
+      "path": "packs/spells",
+      "type": "Item",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "paths",
+      "label": "Paths",
+      "path": "packs/paths",
+      "type": "Item",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "ancestries",
+      "label": "Ancestries",
+      "path": "packs/ancestries",
+      "type": "Item",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "party",
+      "label": "Party",
+      "path": "packs/party",
+      "type": "Actor",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "items",
+      "label": "Items",
+      "path": "packs/items",
+      "type": "Item",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "languages-and-professions",
+      "label": "Languages and Professions",
+      "path": "packs/languages-and-professions",
+      "type": "Item",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "features-and-talents",
+      "label": "Features and Talents",
+      "path": "packs/features-and-talents",
+      "type": "Item",
+      "system": "demonlord",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    }
+  ]
+}
