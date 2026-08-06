@@ -27,6 +27,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     },
@@ -38,6 +39,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     },
@@ -49,6 +51,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     },
@@ -60,6 +63,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     },
@@ -71,6 +75,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     },
@@ -82,6 +87,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     },
@@ -93,6 +99,7 @@
       "system": "demonlord",
       "ownership": {
         "PLAYER": "OBSERVER",
+        "TRUSTED": "OWNER",
         "ASSISTANT": "OWNER"
       }
     }

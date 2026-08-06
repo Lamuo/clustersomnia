@@ -55,6 +55,8 @@ Editing the YAML:
 - Renaming a *directory* does nothing — a folder's display name is the `name` field in its `_Folder.yml`. Rename there; the next `packs:extract` renames the directory to match.
 - A new folder is a new directory containing a `_Folder.yml` with a fresh 16-char alphanumeric `_id`, `_key: "!folders!<id>"`, `name`, `type` matching the pack's document type, and `sorting`/`sort`. Order within a folder is the integer `sort`.
 
+Pack ownership is `PLAYER: OBSERVER`, `TRUSTED: OWNER`, `ASSISTANT: OWNER`. **Trusted Player is the deliberate content-builder role** — trusted users may create, edit and delete pack contents, plain players may only read and import. Ownership is pack-wide (folders carry no `ownership` field), so a trusted user can edit any document in a pack, including canonical content. Note that a GM who configures ownership for a pack inside the world overrides this block; the world's value wins.
+
 Operational notes:
 
 - **Close Foundry (or at least the world) before running either script**, and reload the world after a compile. Both directions open the LevelDB store; `extract` is logically read-only but still triggers LevelDB log recovery, so it rewrites `.log`/`MANIFEST-*` files and dirties `packs/` in git even when no data changed.
