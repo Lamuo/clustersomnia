@@ -1,1 +1,4 @@
 packs/** binary
+
+# The editable sources the packs are built from - these must diff and merge as text.
+src/packs/** text eol=lf

@@ -3,6 +3,9 @@ packs/*/LOCK
 packs/*/LOG
 packs/*/LOG.old
 
+# Dev tooling (tools/packs.mjs) - not needed to run the module
+node_modules/
+
 # OS / editor junk
 .DS_Store
 Thumbs.db
