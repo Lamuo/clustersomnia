@@ -1,4 +1,5 @@
 import { TrackerApp } from "./tracker-app.js";
+import "./folder-permissions.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
 const LEGACY_FLAG_NAMESPACE = "my-tracker";
