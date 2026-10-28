@@ -12,7 +12,8 @@
     "scripts/module.js"
   ],
   "styles": [
-    "styles/tracker.css"
+    "styles/tracker.css",
+    "styles/unity-meter.css"
   ],
   "authors": [
     {

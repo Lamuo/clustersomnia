@@ -30,6 +30,14 @@ Both apps are **ApplicationV2 + HandlebarsApplicationMixin** (`foundry.applicati
 
 `TrackerApp` keeps itself live by registering Foundry hooks (`updateActor`, `create/update/deleteActiveEffect`, `create/deleteItem`) in `_onRender` and storing their ids on `this._hooks`; `_onClose` unregisters them. The `??=` guard means they are registered once per app instance, not per re-render — **any new hook must be added to that array and will be cleaned up automatically; registering outside it leaks a listener per window.**
 
+## Unity meter (per-PG "punti unione")
+
+`scripts/unity-meter.js` draws a fixed on-screen stack of JRPG gauges, one per PC (character actors with a player owner), as plain DOM `#clustersomnia-unity` (not an Application). Beside each bar sit the portraits of PCs *ready* for a union move with it: both PGs have >= the pair's cost and the pair isn't in `used` yet. Clicking a portrait spends the cost from both and marks the pair used (A+B == B+A, key = sorted ids joined by `|`).
+
+A PG's points are the uses of its **"Punti Unione" talent** item (`system.uses.value`, max = `system.uses.max`, fallback 5), so the sheet and the meter always agree; PCs without that talent don't get a bar. The pairs already used this fight are the only module-owned state: world setting `unityState` `{used:[pairKey]}`, plus `unityCosts` (per-pair overrides of `unityDefaultCost`, edited in `UnityConfigApp`). Only the active GM writes: Trusted+ clients emit `{type:"unity-op"}` on the module socket (ops: `delta`, `use`; `resetUsed` is GM-only) and the GM applies them serially in `applyOperation`, updating the talent items directly. Item create/update/delete hooks on that talent redraw the meter. `used` is cleared on `deleteCombat`.
+
+Skins live in `skins/<name>/` (`skin.json` + frame/fill images) or in any user folder set in `unitySkinFolder`. The fill image is revealed with a slanted `clip-path` driven by `track.x0/x1/slant` (percent of the artwork); see `skins/persona/skin.json` for every supported key. Preset choices are hardcoded in `PRESET_SKINS`.
+
 ## Persistence rules (easy to get wrong)
 
 - Flag namespace is `"clustersomnia"`, hardcoded as `FLAG_NAMESPACE` in each script. `"my-tracker"` is the **legacy** namespace from a now-deleted standalone module; `module.js` migrates leftover `counters` / `displayedEffectIds` off it once, GM-only, on `ready`. Do not write to the legacy namespace.

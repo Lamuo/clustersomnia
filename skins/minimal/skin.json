@@ -1,0 +1,15 @@
+{
+  "name": "Minimal",
+  "width": 260,
+  "height": 44,
+  "frame": "frame.svg",
+  "fill": "fill.svg",
+  "track": { "x0": 2, "x1": 98, "slant": 0 },
+  "text": {
+    "template": "{value} / {max}",
+    "x": 50, "y": 50, "align": "center",
+    "size": 20, "color": "#ffffff",
+    "stroke": "#000000", "strokeWidth": 3
+  },
+  "position": { "bottom": "120px", "left": "20px" }
+}
