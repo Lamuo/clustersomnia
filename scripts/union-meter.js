@@ -1,0 +1,558 @@
+import { UnionConfigApp } from "./union-config-app.js";
+
+const MODULE_ID = "clustersomnia";
+const SOCKET_CHANNEL = "module.clustersomnia";
+const ROOT_ID = "clustersomnia-union";
+const PRESET_SKINS = { minimal: "Minimal" };
+const DEFAULT_SKIN = "minimal";
+
+const skinCache = new Map();
+
+/* -------------------------------------------- */
+/*  State                                        */
+/*  A PG's points are the uses of its "Punti     */
+/*  Unione" talent (the sheet is the source of   */
+/*  truth, max comes from the talent too). The   */
+/*  pairs already used this fight live in one    */
+/*  world setting, so the GM is the single       */
+/*  writer.                                      */
+/* -------------------------------------------- */
+
+const ENTRY_NAME = "Punti Unione";
+const FALLBACK_MAX = 5;
+
+/** The actor's "Punti Unione" talent, if it has one. */
+export function unionItem(actor) {
+  return actor.items.find(item => item.type === "talent" && item.name === ENTRY_NAME);
+}
+
+function pointsOf(actor) {
+  return Number(unionItem(actor)?.system.uses?.value) || 0;
+}
+
+function maxOf(actor) {
+  return Number(unionItem(actor)?.system.uses?.max) || FALLBACK_MAX;
+}
+
+/**
+ * Face crops shipped with the module, matched on any word of the actor's name ("Lady Diane" -> diane).
+ * They are only the default: `unionImages` overrides them per actor.
+ */
+const DEFAULT_BUBBLES = ["alsa", "black", "diane", "edgar", "quark", "vishara", "zoe"];
+
+function bubbleKey(actor) {
+  return actor.name.toLowerCase().split(/\s+/).find(word => DEFAULT_BUBBLES.includes(word));
+}
+
+/** Short label for a PG: the name that matches its crop, else the first word. */
+export function shortName(actor) {
+  const key = bubbleKey(actor);
+  return key ? actor.name.split(/\s+/).find(word => word.toLowerCase() === key) : actor.name.split(/\s+/)[0];
+}
+
+export function defaultBubble(actor) {
+  const key = bubbleKey(actor);
+  return key ? `modules/${MODULE_ID}/art/bubbles/${key}.jpg` : actor.img;
+}
+
+/** Image shown in the "ready" bubble of this PG: custom, else the shipped crop, else the sheet portrait. */
+export function bubbleImage(actor) {
+  return game.settings.get(MODULE_ID, "unionImages")[actor.id] || defaultBubble(actor);
+}
+
+export function pairKey(a, b) {
+  return [a, b].sort().join("|");
+}
+
+/** PCs that take part in the meter: characters carrying the "Punti Unione" talent (GM-owned ones included). */
+export function unionParty() {
+  return game.actors
+    .filter(actor => actor.type === "character" && unionItem(actor))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function pairCost(a, b) {
+  const costs = game.settings.get(MODULE_ID, "unionCosts");
+  const cost = costs[pairKey(a, b)] ?? game.settings.get(MODULE_ID, "unionDefaultCost");
+  return Math.max(1, cost);
+}
+
+function getState() {
+  return { used: game.settings.get(MODULE_ID, "unionState").used ?? [] };
+}
+
+/** Both PGs must reach the pair's cost and the pair must not have been used yet. */
+function isReady(state, a, b) {
+  if (a === b || state.used.includes(pairKey(a.id, b.id))) return false;
+  const cost = pairCost(a.id, b.id);
+  return pointsOf(a) >= cost && pointsOf(b) >= cost;
+}
+
+/* -------------------------------------------- */
+/*  Settings                                     */
+/* -------------------------------------------- */
+
+Hooks.once("init", () => {
+  const redraw = () => renderMeter();
+
+  game.settings.register(MODULE_ID, "unionState", {
+    scope: "world", config: false, type: Object, default: { used: [] }, onChange: redraw
+  });
+  game.settings.register(MODULE_ID, "unionCosts", {
+    scope: "world", config: false, type: Object, default: {}, onChange: redraw
+  });
+  game.settings.register(MODULE_ID, "unionImages", {
+    scope: "world", config: false, type: Object, default: {}, onChange: redraw
+  });
+  game.settings.register(MODULE_ID, "unionDefaultCost", {
+    name: "Mossa unione: costo predefinito",
+    hint: "PU richiesti a entrambi i PG, salvo costo specifico per la coppia (menu qui sotto).",
+    scope: "world", config: true, type: Number, default: 5,
+    range: { min: 1, max: 100, step: 1 }, onChange: redraw
+  });
+  game.settings.registerMenu(MODULE_ID, "unionConfig", {
+    name: "Mossa unione: costi e reset",
+    label: "Configura",
+    hint: "Costo per ogni coppia di PG e azzeramento di punti e mosse usate.",
+    icon: "fas fa-link",
+    type: UnionConfigApp,
+    restricted: true
+  });
+  game.settings.register(MODULE_ID, "unionSkin", {
+    name: "Punti unione: skin",
+    hint: "Skin del meter, uguale per tutti i giocatori.",
+    scope: "world", config: true, type: String, default: DEFAULT_SKIN,
+    choices: PRESET_SKINS, onChange: redraw
+  });
+  game.settings.register(MODULE_ID, "unionSkinFolder", {
+    name: "Punti unione: cartella skin personalizzata",
+    hint: "Cartella con skin.json e le immagini. Se impostata, ha la precedenza sulla skin scelta sopra.",
+    scope: "world", config: true, type: String, default: "", filePicker: "folder", onChange: redraw
+  });
+  game.settings.register(MODULE_ID, "unionShow", {
+    name: "Mostra i meter dei punti unione",
+    scope: "client", config: true, type: Boolean, default: true, onChange: redraw
+  });
+  // Where this client dragged the stack; empty means "use the skin's position".
+  game.settings.register(MODULE_ID, "unionPosition", {
+    scope: "client", config: false, type: Object, default: {}
+  });
+  game.settings.register(MODULE_ID, "unionScale", {
+    name: "Scala dei meter dei punti unione",
+    scope: "client", config: true, type: Number, default: 0.5,
+    range: { min: 0.3, max: 2, step: 0.1 }, onChange: redraw
+  });
+});
+
+/* -------------------------------------------- */
+/*  Editing - GM writes directly, Trusted and    */
+/*  above ask the active GM over the socket.     */
+/*  Operations are applied serially so two       */
+/*  requests never overwrite each other.         */
+/* -------------------------------------------- */
+
+function canEdit(user = game.user) {
+  return user.isGM || user.role >= CONST.USER_ROLES.TRUSTED;
+}
+
+const OPERATIONS = {
+  async delta(state, { actorId, delta }) {
+    const actor = unionParty().find(candidate => candidate.id === actorId);
+    if (!actor) return false;
+    await setPoints(actor, pointsOf(actor) + delta);
+    return false;
+  },
+  async use(state, { a, b }) {
+    const [actorA, actorB] = [a, b].map(id => unionParty().find(candidate => candidate.id === id));
+    if (!actorA || !actorB || !isReady(state, actorA, actorB)) return false;
+    const cost = pairCost(a, b);
+    await setPoints(actorA, pointsOf(actorA) - cost);
+    await setPoints(actorB, pointsOf(actorB) - cost);
+    state.used.push(pairKey(a, b));
+    return true;
+  },
+  async resetUsed(state) {
+    state.used = [];
+    return true;
+  }
+};
+
+function setPoints(actor, value) {
+  return unionItem(actor).update({ "system.uses.value": Math.min(maxOf(actor), Math.max(0, value)) });
+}
+
+let queue = Promise.resolve();
+
+function applyOperation(op, args) {
+  queue = queue.then(async () => {
+    const state = foundry.utils.deepClone(getState());
+    if (await OPERATIONS[op](state, args)) await game.settings.set(MODULE_ID, "unionState", state);
+  }).catch(err => console.error(`${MODULE_ID} | ${err.message}`));
+  return queue;
+}
+
+export function requestOperation(op, args = {}) {
+  if (game.user.isGM) return applyOperation(op, args);
+  if (!game.users.activeGM) return ui.notifications.warn(`${MODULE_ID} | Nessun GM connesso: operazione annullata.`);
+  game.socket.emit(SOCKET_CHANNEL, { type: "union-op", op, args, userId: game.user.id });
+}
+
+const RENAMED_SETTINGS = {
+  world: ["State", "Costs", "DefaultCost", "Skin", "SkinFolder", "Images"],
+  client: ["Show", "Scale", "Position"]
+};
+
+/** One-time move of values saved under the old "unity" setting names to the "union" ones. */
+async function migrateSettings() {
+  const client = game.settings.storage.get("client");
+  for (const name of RENAMED_SETTINGS.client) {
+    const oldKey = `${MODULE_ID}.unity${name}`;
+    const raw = client.getItem(oldKey);
+    if (raw === null) continue;
+    if (client.getItem(`${MODULE_ID}.union${name}`) === null) {
+      await game.settings.set(MODULE_ID, `union${name}`, JSON.parse(raw));
+    }
+    client.removeItem(oldKey);
+  }
+
+  if (!game.user.isGM) return;
+  const world = game.settings.storage.get("world");
+  for (const name of RENAMED_SETTINGS.world) {
+    const old = world.getSetting(`${MODULE_ID}.unity${name}`);
+    if (!old) continue;
+    if (!world.getSetting(`${MODULE_ID}.union${name}`)) {
+      // World setting documents already expose the parsed value.
+      await game.settings.set(MODULE_ID, `union${name}`, old.value);
+    }
+    await old.delete();
+  }
+}
+
+Hooks.once("ready", async () => {
+  game.socket.on(SOCKET_CHANNEL, message => {
+    if (message.type !== "union-op") return;
+    if (game.users.activeGM?.id !== game.user.id) return;
+    if (!canEdit(game.users.get(message.userId))) return;
+    // Players may only nudge points and spend ready pairs; resets stay with the GM.
+    if (!["delta", "use"].includes(message.op)) return;
+    if (message.op === "delta" && !Number.isFinite(message.args?.delta)) return;
+    applyOperation(message.op, message.args);
+  });
+  window.addEventListener("resize", foundry.utils.debounce(() => renderMeter(), 150));
+  await migrateSettings();
+  renderMeter();
+});
+
+// A fight ending clears the pairs used in it.
+Hooks.on("deleteCombat", () => {
+  if (game.users.activeGM?.id === game.user.id) applyOperation("resetUsed");
+});
+
+const redrawSoon = foundry.utils.debounce(() => renderMeter(), 50);
+for (const hook of ["createActor", "updateActor", "deleteActor"]) Hooks.on(hook, redrawSoon);
+for (const hook of ["createItem", "updateItem", "deleteItem"]) {
+  Hooks.on(hook, item => {
+    if (item.name === ENTRY_NAME && item.parent?.documentName === "Actor") redrawSoon();
+  });
+}
+
+/* -------------------------------------------- */
+/*  Skins                                        */
+/* -------------------------------------------- */
+
+function skinFolder() {
+  const custom = game.settings.get(MODULE_ID, "unionSkinFolder")?.trim();
+  if (custom) return custom.replace(/\/$/, "");
+  const preset = game.settings.get(MODULE_ID, "unionSkin");
+  return `modules/${MODULE_ID}/skins/${PRESET_SKINS[preset] ? preset : DEFAULT_SKIN}`;
+}
+
+async function loadSkin(folder) {
+  if (skinCache.has(folder)) return skinCache.get(folder);
+  const response = await fetch(`${folder}/skin.json`);
+  if (!response.ok) throw new Error(`skin.json non trovato in ${folder}`);
+  const skin = { ...(await response.json()), folder };
+  skinCache.set(folder, skin);
+  return skin;
+}
+
+async function resolveSkin() {
+  const folder = skinFolder();
+  try {
+    return await loadSkin(folder);
+  } catch (err) {
+    console.warn(`${MODULE_ID} | ${err.message}, uso la skin predefinita`);
+    return loadSkin(`modules/${MODULE_ID}/skins/${DEFAULT_SKIN}`);
+  }
+}
+
+/**
+ * The fill layer is revealed left to right through a slanted clip polygon.
+ * `track.x0`/`x1` are where the fillable area starts/ends in the artwork (%),
+ * `track.slant` is the horizontal skew of the cut edge (%).
+ */
+function fillClip({ x0 = 0, x1 = 100, slant = 0 }, fraction) {
+  const p = (x0 - slant) + (x1 - x0 + 2 * slant) * fraction;
+  return `polygon(0% 0%, ${p + slant}% 0%, ${p - slant}% 100%, 0% 100%)`;
+}
+
+function formatText(template, value, max) {
+  const percent = Math.round((value / max) * 100);
+  return template.replace("{value}", value).replace("{max}", max).replace("{percent}", percent);
+}
+
+/* -------------------------------------------- */
+/*  Rendering                                    */
+/* -------------------------------------------- */
+
+let renderToken = 0;
+
+async function renderMeter() {
+  if (!game.ready) return;
+  const token = ++renderToken;
+  const root = document.getElementById(ROOT_ID);
+
+  const party = unionParty();
+  if (!game.settings.get(MODULE_ID, "unionShow") || !party.length) return root?.remove();
+
+  const skin = await resolveSkin();
+  if (token !== renderToken) return;
+
+  const scale = game.settings.get(MODULE_ID, "unionScale");
+  const el = root ?? document.createElement("div");
+  if (!root) {
+    el.id = ROOT_ID;
+    document.body.appendChild(el);
+  }
+
+  // Rows are rebuilt only when their structure changes, so the fill keeps its CSS transition.
+  const key = [skin.folder, canEdit(), ...party.map(a => `${a.id}:${a.name}:${a.img}`)].join("|");
+  if (el.dataset.key !== key) {
+    buildRows(el, skin, party);
+    el.dataset.key = key;
+  }
+  // Every size in the stack derives from --cu-s, so changing the scale never needs a rebuild.
+  el.style.setProperty("--cu-s", scale);
+  updateRows(el, skin, party);
+
+  // Width changes with the ready partners, so the position is re-clamped on every redraw.
+  if (hasSavedPosition() && !el.classList.contains("dragging")) {
+    const { left, top } = game.settings.get(MODULE_ID, "unionPosition");
+    placeWithin(el, left, top);
+  }
+}
+
+function hasSavedPosition() {
+  const { left, top } = game.settings.get(MODULE_ID, "unionPosition");
+  return Number.isFinite(left) && Number.isFinite(top);
+}
+
+function buildRows(el, skin, party) {
+  const asset = file => `${skin.folder}/${file}`;
+  const text = skin.text ?? {};
+  const align = text.align === "left" ? "0" : text.align === "right" ? "-100%" : "-50%";
+  const textStyle = `font-size:calc(${text.size ?? 40}px * var(--cu-s));color:${text.color ?? "#fff"};font-family:${text.font ?? "inherit"};${text.stroke ? `-webkit-text-stroke:calc(${text.strokeWidth ?? 4}px * var(--cu-s)) ${text.stroke}` : ""}`;
+
+  const position = skin.position ?? {};
+
+  el.style.cssText = "";
+  // Artwork size and portrait size at scale 1; the stylesheet multiplies them by --cu-s.
+  el.style.setProperty("--cu-w", `${skin.width}px`);
+  el.style.setProperty("--cu-icon", `${skin.portraitSize ?? skin.height * 1.45}px`);
+  // Lets a skin with a tilted bar lower the portrait to meet the bar's left end.
+  el.style.setProperty("--cu-shift", `${skin.portraitShift ?? 0}px`);
+  el.classList.toggle("editable", canEdit());
+  el.classList.toggle("still-bubbles", skin.bubbleAnimation === false);
+  // A saved position is applied (and clamped) by renderMeter once the stack has its real size.
+  if (!hasSavedPosition()) {
+    // Anchor to one edge per axis: top wins over bottom, right over left.
+    if (position.top) el.style.top = position.top;
+    else el.style.bottom = position.bottom ?? "120px";
+    if (position.right) el.style.right = position.right;
+    else el.style.left = position.left ?? "20px";
+  }
+
+  el.innerHTML = `<div class="cu-grip" title="Trascina per spostare, doppio clic per ripristinare"><i class="fas fa-grip"></i></div>
+    <div class="cu-resize" title="Trascina per ridimensionare, doppio clic per ripristinare"></div>` + party.map(actor => `
+    <div class="cu-row" data-actor-id="${actor.id}">
+      <img class="cu-portrait" src="${actor.img}" draggable="false">
+      <div class="cu-main">
+      ${skin.showName === false ? "" : `<div class="cu-name">${Handlebars.Utils.escapeExpression(actor.name)}</div>`}
+      <div class="cu-line">
+        <div class="cu-meter" style="aspect-ratio:${skin.width} / ${skin.height}">
+          <img class="cu-layer cu-frame" src="${asset(skin.frame)}" draggable="false">
+          <img class="cu-layer cu-fill" src="${asset(skin.fill)}" draggable="false">
+          ${skin.overlay ? `<img class="cu-layer cu-overlay" src="${asset(skin.overlay)}" draggable="false">` : ""}
+          ${skin.showText === false ? "" : `<div class="cu-text" style="left:${text.x ?? 50}%;top:${text.y ?? 50}%;transform:translate(${align}, -50%);${textStyle}"></div>`}
+          ${canEdit() && !skin.portraitControls ? `<div class="cu-controls">
+            <button type="button" data-delta="-1">−</button>
+            <button type="button" data-delta="1">+</button>
+          </div>` : ""}
+        </div>
+        <div class="cu-partners"></div>
+      </div>
+      </div>
+    </div>`).join("");
+
+  enableDrag(el);
+  enableResize(el);
+
+  el.querySelectorAll("[data-delta]").forEach(button => {
+    button.addEventListener("click", event => {
+      const actorId = button.closest(".cu-row").dataset.actorId;
+      const step = event.shiftKey ? 5 : 1;
+      requestOperation("delta", { actorId, delta: Number(button.dataset.delta) * step });
+    });
+  });
+
+  // "portraitControls" skins have no buttons: left click on the PG's portrait raises, right click lowers.
+  if (skin.portraitControls && canEdit()) {
+    el.querySelectorAll(".cu-portrait").forEach(portrait => {
+      portrait.classList.add("adjustable");
+      portrait.title = "Clic sinistro: +1, clic destro: −1 (con Maiusc: 5)";
+      const nudge = (event, sign) => {
+        event.preventDefault();
+        const actorId = portrait.closest(".cu-row").dataset.actorId;
+        requestOperation("delta", { actorId, delta: sign * (event.shiftKey ? 5 : 1) });
+      };
+      portrait.addEventListener("click", event => nudge(event, 1));
+      portrait.addEventListener("contextmenu", event => nudge(event, -1));
+    });
+  }
+}
+
+// Room kept above and below the stack so its grips never leave the screen.
+const GRIP_ROOM = 22;
+const SCALE = { min: 0.3, max: 2, default: 0.5 };
+
+/** Places the stack at left/top, kept entirely inside the window (grips included). */
+function placeWithin(el, left, top) {
+  const maxLeft = Math.max(0, window.innerWidth - el.offsetWidth);
+  const maxTop = Math.max(GRIP_ROOM, window.innerHeight - el.offsetHeight - GRIP_ROOM);
+  el.style.right = el.style.bottom = "auto";
+  el.style.left = `${Math.min(Math.max(0, left), maxLeft)}px`;
+  el.style.top = `${Math.min(Math.max(GRIP_ROOM, top), maxTop)}px`;
+}
+
+/** The grip drags the whole stack; the position is saved per client when the drag ends. */
+function enableDrag(el) {
+  const grip = el.querySelector(".cu-grip");
+
+  grip.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    const box = el.getBoundingClientRect();
+    const dx = event.clientX - box.left;
+    const dy = event.clientY - box.top;
+    grip.setPointerCapture(event.pointerId);
+    el.classList.add("dragging");
+
+    const move = e => placeWithin(el, e.clientX - dx, e.clientY - dy);
+    const stop = () => {
+      grip.removeEventListener("pointermove", move);
+      grip.removeEventListener("pointerup", stop);
+      grip.removeEventListener("pointercancel", stop);
+      el.classList.remove("dragging");
+      game.settings.set(MODULE_ID, "unionPosition", {
+        left: Math.round(el.getBoundingClientRect().left),
+        top: Math.round(el.getBoundingClientRect().top)
+      });
+    };
+    grip.addEventListener("pointermove", move);
+    grip.addEventListener("pointerup", stop);
+    grip.addEventListener("pointercancel", stop);
+  });
+
+  grip.addEventListener("dblclick", async () => {
+    await game.settings.set(MODULE_ID, "unionPosition", {});
+    delete el.dataset.key;
+    renderMeter();
+  });
+}
+
+/**
+ * The corner handle resizes the whole stack with its proportions locked. The stack's size comes from
+ * the --cu-s variable, so dragging just updates it live: what you see is the final layout.
+ */
+function enableResize(el) {
+  const handle = el.querySelector(".cu-resize");
+
+  handle.addEventListener("pointerdown", event => {
+    if (event.button !== 0) return;
+    const box = el.getBoundingClientRect();
+    const startScale = game.settings.get(MODULE_ID, "unionScale");
+    let scale = startScale;
+
+    // Some of the width is fixed (gaps, borders), so measure how it grows with the scale
+    // and make the handle follow the pointer instead of assuming a pure proportion.
+    el.style.setProperty("--cu-s", startScale / 2);
+    const halfWidth = el.offsetWidth;
+    el.style.setProperty("--cu-s", startScale);
+    const slope = (box.width - halfWidth) / (startScale / 2);
+
+    // Pin the top-left corner so the stack grows right and down from where it is.
+    el.style.right = el.style.bottom = "auto";
+    el.style.left = `${box.left}px`;
+    el.style.top = `${box.top}px`;
+    handle.setPointerCapture(event.pointerId);
+    el.classList.add("dragging");
+
+    const move = e => {
+      scale = startScale + (e.clientX - box.left - box.width) / slope;
+      scale = Math.round(Math.min(SCALE.max, Math.max(SCALE.min, scale)) * 100) / 100;
+      el.style.setProperty("--cu-s", scale);
+    };
+    const stop = async () => {
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", stop);
+      handle.removeEventListener("pointercancel", stop);
+      el.classList.remove("dragging");
+      await game.settings.set(MODULE_ID, "unionPosition", { left: Math.round(box.left), top: Math.round(box.top) });
+      await game.settings.set(MODULE_ID, "unionScale", scale);
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", stop);
+    handle.addEventListener("pointercancel", stop);
+  });
+
+  handle.addEventListener("dblclick", () => game.settings.set(MODULE_ID, "unionScale", SCALE.default));
+}
+
+function updateRows(el, skin, party) {
+  const state = getState();
+
+  for (const actor of party) {
+    const row = el.querySelector(`.cu-row[data-actor-id="${actor.id}"]`);
+    if (!row) continue;
+    const max = maxOf(actor);
+    const value = Math.min(max, pointsOf(actor));
+
+    row.querySelector(".cu-fill").style.clipPath = fillClip(skin.track ?? {}, value / max);
+    const label = row.querySelector(".cu-text");
+    if (label) label.textContent = formatText(skin.text?.template ?? "{percent}%", value, max);
+
+    const meter = row.querySelector(".cu-meter");
+    if (value !== Number(meter.dataset.value ?? value)) {
+      meter.classList.remove("pulse");
+      void meter.offsetWidth;
+      meter.classList.add("pulse");
+    }
+    meter.dataset.value = value;
+
+    // Partners ready to perform a union move with this PG.
+    const partners = row.querySelector(".cu-partners");
+    partners.replaceChildren(...party
+      .filter(other => isReady(state, actor, other))
+      .map(other => {
+        const icon = document.createElement("img");
+        icon.className = "cu-partner";
+        icon.src = bubbleImage(other);
+        icon.draggable = false;
+        icon.dataset.tooltip = `${other.name} — mossa unione (${pairCost(actor.id, other.id)} PU)`;
+        if (canEdit()) {
+          icon.classList.add("clickable");
+          icon.addEventListener("click", () => requestOperation("use", { a: actor.id, b: other.id }));
+        }
+        return icon;
+      }));
+  }
+}

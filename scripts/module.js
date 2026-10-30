@@ -1,7 +1,7 @@
 import { TrackerApp } from "./tracker-app.js";
 import "./folder-permissions.js";
 import "./folder-relay.js";
-import "./unity-meter.js";
+import "./union-meter.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
 const LEGACY_FLAG_NAMESPACE = "my-tracker";

@@ -4,12 +4,12 @@ Una skin è una cartella con un `skin.json` e le immagini che usa. Il meter di o
 
 ## Usare una skin
 
-- **Preset inclusi**: `persona` e `minimal`, scelti in *Impostazioni modulo → Punti unione: skin*.
+- **Preset incluso**: `minimal`, scelto in *Impostazioni modulo → Punti unione: skin*.
 - **Skin tua**: metti la cartella dove vuoi dentro i dati di Foundry (per esempio `Data/skins/mia-skin/`) e selezionala in *Punti unione: cartella skin personalizzata*. Se è impostata, ha la precedenza sul preset.
 - Dopo aver modificato `skin.json` o le immagini ricarica il mondo (F5): il manifest viene letto una volta sola.
-- Se `skin.json` non si trova o non è valido, il meter ripiega su `persona` e scrive un avviso in console.
+- Se `skin.json` non si trova o non è valido, il meter ripiega su `minimal` e scrive un avviso in console.
 
-Per partire, copia `persona/` o `minimal/` e modificala.
+Per partire, copia `minimal/` e modificala. Il suo `skin.json` mostra solo le chiavi di base e di comportamento; l'esempio qui sotto elenca anche quelle del testo, per le skin che mostrano un valore.
 
 ## Come è composto il meter
 
@@ -62,10 +62,25 @@ PNG e SVG con trasparenza funzionano senza altro lavoro: ogni livello è un'imma
 | `text.font` | no | Valore CSS di `font-family`. Il font deve essere già installato o caricato in Foundry. |
 | `position` | no | Dove sta la pila di meter sullo schermo: `top` oppure `bottom` (default `bottom: 120px`) e `left` oppure `right` (default `left: 20px`), come valori CSS. Se indichi `top`, `bottom` viene ignorato; se indichi `right`, `left` viene ignorato. |
 
-La scala scelta da ciascun giocatore nelle impostazioni (default 0,5) ridimensiona tutto insieme: immagini, testo e icone.
+### Chiavi di comportamento (tutte facoltative)
+
+| Chiave | Significato |
+|---|---|
+| `showName` | `false` nasconde il nome del PG sopra la barra. |
+| `showText` | `false` non disegna l'etichetta del valore: il valore si legge solo dalla barra. |
+| `portraitControls` | `true` toglie i pulsanti − e + al passaggio del mouse e li sostituisce con il ritratto del PG: clic sinistro +1, clic destro −1, con Maiusc ±5. Solo per chi può modificare i punti. |
+| `bubbleAnimation` | `false` ferma l'alone pulsante sulle icone dei compagni pronti. |
+| `portraitSize` | Diametro in pixel del ritratto del PG e delle icone dei compagni a scala 1. Default: 1,45 volte `height`. |
+| `portraitShift` | Sposta in basso il ritratto di tanti pixel a scala 1. Serve quando la barra è inclinata e il suo capo sinistro sta più in basso del centro della riga. |
+
+## Dimensione e posizione
+
+La scala scelta da ciascun giocatore (default 0,5, da 0,3 a 2) ridimensiona tutto insieme: immagini, testo e icone. Si cambia dalle impostazioni o trascinando la maniglia nell'angolo in basso a destra della pila; doppio clic la riporta a 0,5. La maniglia in alto a sinistra sposta la pila, doppio clic la riporta alla posizione della skin. Entrambe sono per client.
 
 ## Limiti
 
 - Il riempimento avanza solo da sinistra a destra: niente barre verticali o da destra a sinistra.
 - C'è un solo `track` per skin, uguale per tutti i PG.
 - Nessun layout alternativo per le icone dei compagni pronti: stanno sempre a destra del meter.
+- Se la barra è inclinata, i compagni pronti restano comunque allineati al centro della riga, non alla barra.
+- Con la scala cambiano immagini, testo del valore e ritratti; il nome del PG e gli spazi tra le righe hanno invece dimensione fissa in pixel.

@@ -1,0 +1,69 @@
+<div class="sotdl-union-config">
+  <header class="suc-base">
+    <label class="suc-base-field">
+      <span>Costo di base</span>
+      <input type="number" name="defaultCost" min="1" max="100" step="1" value="{{defaultCost}}">
+    </label>
+    <p>PU richiesti a entrambi i PG. Cambia una cella per dare un costo diverso a una coppia.</p>
+  </header>
+
+  {{#if columns.length}}
+  <div class="suc-scroll">
+    <table class="suc-matrix">
+      <thead>
+        <tr>
+          <td></td>
+          {{#each columns as |actor|}}
+          <th scope="col" title="{{actor.name}}">
+            <div class="suc-who"><img src="{{actor.img}}" alt=""><span>{{actor.short}}</span></div>
+          </th>
+          {{/each}}
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows as |row|}}
+        <tr>
+          <th scope="row" title="{{row.actor.name}}">
+            <div class="suc-who"><img src="{{row.actor.img}}" alt=""><span>{{row.actor.short}}</span></div>
+          </th>
+          {{#each row.cells as |cell|}}
+          {{#if cell.key}}
+          <td class="suc-cell{{#if cell.changed}} changed{{/if}}{{#if cell.used}} used{{/if}}">
+            <input type="number" min="1" step="1" value="{{cell.cost}}" data-pair="{{cell.key}}" aria-label="{{cell.label}}" title="{{cell.label}}{{#if cell.used}} (già usata){{/if}}">
+          </td>
+          {{else}}
+          <td class="suc-void"></td>
+          {{/if}}
+          {{/each}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  <p class="suc-legend"><i class="suc-dot"></i> Coppia già usata in questo scontro</p>
+
+  <section class="suc-images">
+    <h3>Immagine della mossa unione</h3>
+    <p>Compare accanto alla barra quando il PG ha una mossa pronta. Clicca per sceglierne un'altra.</p>
+    <ul>
+      {{#each images as |image|}}
+      <li class="suc-image" data-actor="{{image.id}}">
+        <button type="button" data-action="pickImage" title="Scegli un'immagine per {{image.name}}">
+          <img src="{{image.src}}" alt="">
+        </button>
+        <span title="{{image.name}}">{{image.short}}</span>
+        <button type="button" class="suc-reset" data-action="resetImage" title="Ripristina l'immagine predefinita" aria-label="Ripristina l'immagine predefinita di {{image.name}}"><i class="fas fa-rotate-left"></i></button>
+      </li>
+      {{/each}}
+    </ul>
+  </section>
+  {{else}}
+  <p class="suc-empty">Servono almeno due PG: personaggi con il talento "Punti Unione".</p>
+  {{/if}}
+
+  <footer class="suc-footer">
+    <button type="button" class="suc-primary" data-action="save">Salva</button>
+    <button type="button" data-action="resetUsed">Azzera mosse usate</button>
+    <button type="button" data-action="cancel">Annulla</button>
+  </footer>
+</div>

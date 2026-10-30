@@ -1,0 +1,528 @@
+#clustersomnia-union {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#clustersomnia-union.editable .cu-meter,
+#clustersomnia-union.editable .cu-partner.clickable {
+  pointer-events: auto;
+}
+
+#clustersomnia-union .cu-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --cu-s (scale), --cu-w (artwork width) and --cu-icon (portrait size) are set from script. */
+#clustersomnia-union .cu-portrait,
+#clustersomnia-union .cu-partner {
+  width: calc(var(--cu-icon) * var(--cu-s));
+  height: calc(var(--cu-icon) * var(--cu-s));
+}
+
+#clustersomnia-union .cu-portrait {
+  flex: none;
+  translate: 0 calc(var(--cu-shift) * var(--cu-s));
+  border: 2px solid #e8dcc4;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #150e0d;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.6));
+}
+
+#clustersomnia-union .cu-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+#clustersomnia-union .cu-name {
+  max-width: calc(var(--cu-w) * var(--cu-s));
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #f6ecd6;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+}
+
+#clustersomnia-union .cu-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#clustersomnia-union .cu-meter {
+  position: relative;
+  flex: none;
+  width: calc(var(--cu-w) * var(--cu-s));
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.6));
+}
+
+#clustersomnia-union .cu-partners {
+  display: flex;
+  gap: 4px;
+}
+
+#clustersomnia-union .cu-partner {
+  border: 2px solid #2de0c4;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #000;
+  box-shadow: 0 0 8px #2de0c4;
+  animation: cu-ready 1.6s ease-in-out infinite;
+}
+
+#clustersomnia-union .cu-partner.clickable {
+  cursor: pointer;
+}
+
+#clustersomnia-union.still-bubbles .cu-partner {
+  animation: none;
+}
+
+@keyframes cu-ready {
+  50% { box-shadow: 0 0 14px 2px #2de0c4; }
+}
+
+#clustersomnia-union .cu-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  user-select: none;
+}
+
+#clustersomnia-union .cu-fill {
+  transition: clip-path 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#clustersomnia-union .cu-text {
+  position: absolute;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  paint-order: stroke fill;
+}
+
+#clustersomnia-union .cu-meter.pulse {
+  animation: cu-pulse 0.45s ease-out;
+}
+
+@keyframes cu-pulse {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+#clustersomnia-union .cu-controls {
+  position: absolute;
+  left: 5%;
+  top: 50%;
+  display: flex;
+  gap: 3px;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+#clustersomnia-union .cu-meter:hover .cu-controls {
+  opacity: 1;
+}
+
+#clustersomnia-union .cu-controls button {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  background: rgb(21 14 13 / 0.85);
+  color: #f6ecd6;
+  border: 1px solid #e8dcc4;
+}
+
+/* -------------------------------------------- */
+/*  Union costs window                           */
+/* -------------------------------------------- */
+
+.application.sotdl-union-config-app .window-content {
+  padding: 0;
+  background: #150e0d;
+  color: #f6ecd6;
+}
+
+.sotdl-union-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 0;
+}
+
+.sotdl-union-config .suc-base {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sotdl-union-config .suc-base p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #b9a994;
+}
+
+.sotdl-union-config .suc-base-field {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.sotdl-union-config input[type="number"] {
+  width: 54px;
+  height: 30px;
+  padding: 0;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #f6ecd6;
+  background: #2a1d1a;
+  border: 1px solid #5a463d;
+  border-radius: 3px;
+  appearance: textfield;
+}
+
+.sotdl-union-config input[type="number"]:hover,
+.sotdl-union-config input[type="number"]:focus {
+  border-color: #e8dcc4;
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(255 138 48 / 0.35);
+}
+
+.sotdl-union-config input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+}
+
+.sotdl-union-config .suc-base-field input {
+  width: 72px;
+  height: 36px;
+  font-size: 20px;
+  border-color: #e8dcc4;
+}
+
+.sotdl-union-config .suc-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.sotdl-union-config .suc-matrix {
+  border-collapse: separate;
+  border-spacing: 4px;
+  margin: 0 auto;
+  border: none;
+  background: none;
+}
+
+.sotdl-union-config .suc-matrix thead,
+.sotdl-union-config .suc-matrix thead th,
+.sotdl-union-config .suc-matrix thead td,
+.sotdl-union-config .suc-matrix tr,
+.sotdl-union-config .suc-matrix tr:nth-child(even) {
+  background: none;
+}
+
+.sotdl-union-config .suc-matrix th {
+  padding: 0;
+  font-size: 11px;
+  font-weight: bold;
+  line-height: 1.2;
+  color: #e8dcc4;
+  background: none;
+  border: none;
+}
+
+.sotdl-union-config .suc-matrix thead th {
+  display: table-cell;
+  text-align: center;
+  vertical-align: bottom;
+}
+
+.sotdl-union-config .suc-who {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.sotdl-union-config .suc-matrix thead .suc-who {
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.sotdl-union-config .suc-matrix th.hot {
+  color: #ff8a30;
+}
+
+.sotdl-union-config .suc-matrix th.hot img {
+  border-color: #ff8a30;
+}
+
+.sotdl-union-config .suc-matrix tbody th {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.sotdl-union-config .suc-matrix th img {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: 2px solid #e8dcc4;
+  border-radius: 50%;
+  background: #2a1d1a;
+}
+
+.sotdl-union-config .suc-matrix td {
+  padding: 0;
+  text-align: center;
+  border: none;
+}
+
+.sotdl-union-config .suc-void {
+  background: repeating-linear-gradient(135deg, transparent 0 5px, rgb(232 220 196 / 0.06) 5px 6px);
+  border-radius: 3px;
+}
+
+.sotdl-union-config .suc-cell input {
+  color: #8f7f70;
+}
+
+.sotdl-union-config .suc-cell.changed input {
+  color: #ffb066;
+  border-color: #ff8a30;
+  background: #3a211a;
+}
+
+.sotdl-union-config .suc-cell.used {
+  position: relative;
+}
+
+.sotdl-union-config .suc-cell.used::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  background: #2de0c4;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.sotdl-union-config .suc-legend,
+.sotdl-union-config .suc-empty {
+  margin: 0;
+  font-size: 12px;
+  color: #b9a994;
+}
+
+.sotdl-union-config .suc-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 4px;
+  background: #2de0c4;
+  border-radius: 50%;
+}
+
+.sotdl-union-config .suc-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 -16px;
+  padding: 10px 16px;
+  background: #1d1412;
+  border-top: 1px solid #3a2a25;
+}
+
+.sotdl-union-config .suc-footer button {
+  flex: 1;
+  height: 30px;
+  margin: 0;
+  color: #f6ecd6;
+  background: #2a1d1a;
+  border: 1px solid #5a463d;
+}
+
+.sotdl-union-config .suc-footer button:hover {
+  border-color: #e8dcc4;
+  box-shadow: none;
+}
+
+.sotdl-union-config .suc-footer .suc-primary {
+  flex: 1.4;
+  font-weight: bold;
+  color: #150e0d;
+  background: #ff8a30;
+  border-color: #ff8a30;
+}
+
+.sotdl-union-config .suc-images h3 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  border: none;
+  color: #f6ecd6;
+}
+
+.sotdl-union-config .suc-images p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: #b9a994;
+}
+
+.sotdl-union-config .suc-images ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sotdl-union-config .suc-image {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 70px;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+  color: #e8dcc4;
+}
+
+.sotdl-union-config .suc-image span {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.sotdl-union-config .suc-image > button:first-child {
+  width: 64px;
+  height: 64px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #2a1d1a;
+  border: 2px solid #2de0c4;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgb(45 224 196 / 0.5);
+}
+
+.sotdl-union-config .suc-image > button:first-child:hover {
+  border-color: #ff8a30;
+  box-shadow: 0 0 8px rgb(255 138 48 / 0.6);
+}
+
+.sotdl-union-config .suc-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sotdl-union-config .suc-image .suc-reset {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-size: 10px;
+  color: #f6ecd6;
+  background: #150e0d;
+  border: 1px solid #e8dcc4;
+  border-radius: 50%;
+}
+
+#clustersomnia-union .cu-grip {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  width: 44px;
+  height: 16px;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #e8dcc4;
+  background: rgb(21 14 13 / 0.85);
+  border: 1px solid #e8dcc4;
+  border-radius: 8px 8px 0 0;
+  opacity: 0.35;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+  transition: opacity 0.15s;
+}
+
+#clustersomnia-union:hover .cu-grip,
+#clustersomnia-union.dragging .cu-grip {
+  opacity: 1;
+}
+
+#clustersomnia-union.dragging .cu-grip {
+  cursor: grabbing;
+}
+
+#clustersomnia-union .cu-resize {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  background:
+    linear-gradient(135deg, transparent 0 45%, #e8dcc4 45% 55%, transparent 55% 70%, #e8dcc4 70% 80%, transparent 80%),
+    rgb(21 14 13 / 0.85);
+  border: 1px solid #e8dcc4;
+  border-radius: 0 0 8px 0;
+  opacity: 0.35;
+  cursor: nwse-resize;
+  touch-action: none;
+  pointer-events: auto;
+  transition: opacity 0.15s;
+}
+
+#clustersomnia-union:hover .cu-resize,
+#clustersomnia-union.dragging .cu-resize {
+  opacity: 1;
+}
+
+/* Skins with "portraitControls": the portrait itself raises (left click) and lowers (right click). */
+#clustersomnia-union.editable .cu-portrait.adjustable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#clustersomnia-union .cu-portrait.adjustable:hover {
+  border-color: #fff;
+}
