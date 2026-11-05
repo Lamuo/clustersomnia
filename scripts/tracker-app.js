@@ -1,5 +1,16 @@
 import { EffectsConfigApp } from "./effects-config-app.js";
-import { persistenceActor, effectKey } from "./persistence.js";
+import { persistenceActor, displayedEffects } from "./persistence.js";
+import { TAG_CATEGORIES, MAX_STEPS, automaticTags, levelOf, manualTags } from "./tags.js";
+
+// What a tag button or a "from effects" item shows: arrows by direction and the colour tier of its steps.
+function tagDisplay(signed) {
+  if (!signed) return { steps: 0, up: false, down: false, tier: 0, glyphs: "" };
+  const { tier, arrows, special } = levelOf(Math.abs(signed));
+  const up = signed > 0;
+  // The special last step has no arrows: a star for a buff, a cross for a debuff.
+  const glyphs = special ? (up ? "★" : "✖") : (up ? "▲" : "▼").repeat(arrows);
+  return { steps: Math.abs(signed), up, down: !up, tier, glyphs };
+}
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -28,6 +39,8 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
       counterAdd: TrackerApp.#onCounterAdd,
       counterDelta: TrackerApp.#onCounterDelta,
       counterRemove: TrackerApp.#onCounterRemove,
+      counterIcon: TrackerApp.#onCounterIcon,
+      tagCycle: TrackerApp.#onTagCycle,
       effectToggle: TrackerApp.#onEffectToggle,
       effectsConfig: TrackerApp.#onEffectsConfig
     }
@@ -44,11 +57,13 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   get counters() {
-    return foundry.utils.deepClone(this.actor.getFlag(FLAG_NAMESPACE, "counters") ?? []);
+    // Counters live on the world actor, like the effect selection: opened from an unlinked token, the tracker
+    // would otherwise save them on that token alone and the party cards (which read the world actor) never see them.
+    return foundry.utils.deepClone(persistenceActor(this.actor).getFlag(FLAG_NAMESPACE, "counters") ?? []);
   }
 
   async _setCounters(counters) {
-    await this.actor.setFlag(FLAG_NAMESPACE, "counters", counters);
+    await persistenceActor(this.actor).setFlag(FLAG_NAMESPACE, "counters", counters);
   }
 
   get allEffects() {
@@ -56,8 +71,18 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   get effects() {
-    const displayed = new Set(persistenceActor(this.actor).getFlag(FLAG_NAMESPACE, "displayedEffectIds") ?? []);
-    return this.allEffects.filter((effect) => displayed.has(effectKey(effect)) || displayed.has(effect.uuid));
+    return displayedEffects(this.actor);
+  }
+
+  // One button per tag category: off, up or down, set by hand for what no effect describes.
+  get tagContext() {
+    const manual = manualTags(this.actor);
+    return TAG_CATEGORIES.map((category) => ({
+      id: category.id,
+      label: category.label,
+      name: category.name,
+      ...tagDisplay(manual[category.id] ?? 0)
+    }));
   }
 
   _isEffectRelevant(effect) {
@@ -69,7 +94,13 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
       actor: this.actor,
       health: this.actor.system.characteristics.health,
       counters: this.counters,
-      effects: this.effects
+      effects: this.effects,
+      tags: this.tagContext,
+      autoTags: automaticTags(this.actor).map((tag) => ({
+        ...tag,
+        ...tagDisplay(tag.dir === "up" ? tag.steps : -tag.steps),
+        sources: tag.sources.join(", ")
+      }))
     };
   }
 
@@ -99,6 +130,19 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
     for (const input of this.element.querySelectorAll(".sotdl-counter-name")) {
       input.addEventListener("change", (event) => this._onCounterFieldChange(event, "name", event.target.value));
+    }
+    // Right click on the icon button takes the icon off.
+    for (const button of this.element.querySelectorAll(".sotdl-counter-icon")) {
+      button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        this._onCounterFieldChange(event, "icon", null);
+      });
+    }
+    for (const button of this.element.querySelectorAll(".sotdl-tag-button")) {
+      button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        this._stepTag(button.dataset.tagId, -1);
+      });
     }
     for (const input of this.element.querySelectorAll(".sotdl-counter-max")) {
       input.addEventListener("change", (event) => {
@@ -150,6 +194,40 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const max = counter.max ?? Infinity;
     counter.value = Math.min(max, Math.max(0, counter.value + delta));
     this._setCounters(counters);
+  }
+
+  // Foundry's own file picker, so the icon is chosen like any other image.
+  static #onCounterIcon(_event, target) {
+    const id = target.dataset.counterId;
+    const current = this.counters.find((c) => c.id === id)?.icon ?? "";
+    new FilePicker({
+      type: "image",
+      current,
+      callback: (path) => {
+        const counters = this.counters;
+        const counter = counters.find((c) => c.id === id);
+        if (!counter) return;
+        counter.icon = path;
+        this._setCounters(counters);
+      }
+    }).render(true);
+  }
+
+  // Off -> up -> down -> off; stored on the world actor, like the counters.
+  // Left click adds a buff step to a category, right click a debuff step (so it also takes them away).
+  static #onTagCycle(event, target) {
+    // A right click is handled by its own listener (see _onRender); only the left one is this action.
+    if (event.type !== "click") return;
+    return this._stepTag(target.dataset.tagId, 1);
+  }
+
+  _stepTag(id, delta) {
+    const current = manualTags(this.actor)[id] ?? 0;
+    const next = Math.max(-MAX_STEPS, Math.min(MAX_STEPS, current + delta));
+    if (next === current) return;
+    // "-=" is how a key is deleted from an object flag; setFlag would only merge.
+    const path = `flags.${FLAG_NAMESPACE}.tags.${next ? id : `-=${id}`}`;
+    return persistenceActor(this.actor).update({ [path]: next || null });
   }
 
   static #onCounterRemove(_event, target) {

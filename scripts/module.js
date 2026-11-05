@@ -1,7 +1,14 @@
 import { TrackerApp } from "./tracker-app.js";
 import "./folder-permissions.js";
 import "./folder-relay.js";
+import "./compendium-filters.js";
 import "./union-meter.js";
+import "./combat-party.js";
+import "./personal-card.js";
+import "./sheet-popout.js";
+import "./party-toggle.js";
+import "./weapon-size-damage.js";
+import "./health-guard.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
 const LEGACY_FLAG_NAMESPACE = "my-tracker";

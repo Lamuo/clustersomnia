@@ -1,0 +1,134 @@
+.clustersomnia-filtered {
+  display: none !important;
+}
+
+.clustersomnia-filters {
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  padding: 2px 8px 6px;
+}
+
+.clustersomnia-dropdown,
+.clustersomnia-filter-desc {
+  height: 26px;
+  margin: 0;
+  padding: 0 8px;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--color-text-light-1, #f0f0e0);
+  border: 1px solid var(--color-border-dark-4, #4b4a44);
+  border-radius: 3px;
+  font-size: var(--font-size-12);
+  line-height: 24px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.clustersomnia-dropdown {
+  flex: 1;
+  min-width: 90px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clustersomnia-dropdown::after {
+  content: "\f0d7";
+  float: right;
+  font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
+  font-weight: 900;
+  opacity: 0.7;
+}
+
+.clustersomnia-dropdown:hover,
+.clustersomnia-dropdown:focus-visible,
+.clustersomnia-dropdown.open,
+.clustersomnia-filter-desc:hover,
+.clustersomnia-filter-desc:has(input:focus-visible) {
+  border-color: var(--color-border-highlight, #ff6400);
+  outline: none;
+}
+
+/* A selected filter reads as active at a glance. */
+.clustersomnia-dropdown.active {
+  border-color: var(--color-border-highlight, #ff6400);
+}
+
+/* Open list: attached to <body>, so it carries its own opaque colours. */
+.clustersomnia-dropdown-popup {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  background: #1c1b19;
+  color: #f0f0e0;
+  border: 1px solid var(--color-border-highlight, #ff6400);
+  border-radius: 3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  font-size: var(--font-size-12);
+}
+
+.clustersomnia-dropdown-popup input[type="search"] {
+  flex: 0 0 auto;
+  margin: 4px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border: 1px solid var(--color-border-dark-4, #4b4a44);
+}
+
+.clustersomnia-dropdown-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.clustersomnia-dropdown-item {
+  padding: 3px 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.clustersomnia-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.clustersomnia-dropdown-item.selected {
+  background: var(--color-border-highlight, #ff6400);
+  color: #fff;
+}
+
+/* The "Text" checkbox is a toggle chip rather than a raw checkbox. */
+.clustersomnia-filter-desc {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.clustersomnia-filter-desc input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.clustersomnia-filter-desc:has(input:checked) {
+  background: var(--color-border-highlight, #ff6400);
+  border-color: var(--color-border-highlight, #ff6400);
+  color: #fff;
+}
+
+.clustersomnia-filter-count {
+  flex: 0 0 100%;
+  height: auto;
+  line-height: 1;
+  text-align: right;
+  color: var(--color-text-light-6, #c9c7b8);
+  font-size: var(--font-size-11);
+}
+
+.clustersomnia-filter-count:empty {
+  display: none;
+}

@@ -73,11 +73,29 @@ function canManagePack(pack) {
 const origFolderContextOptions = Compendium.prototype._getFolderContextOptions;
 Compendium.prototype._getFolderContextOptions = function () {
   const options = origFolderContextOptions.call(this);
+  const canEdit = () => (game.user.isGM || canManagePack(this.collection)) && !this.collection.locked;
   for (const option of options) {
     if (["FOLDER.Edit", "FOLDER.Remove"].includes(option.name)) {
       option.condition = () => game.user.isGM || canManagePack(this.collection);
     }
   }
+  const editIndex = options.findIndex(o => o.name === "FOLDER.Edit");
+  options.splice(editIndex + 1, 0, {
+    name: "Rename",
+    icon: '<i class="fas fa-pen"></i>',
+    condition: canEdit,
+    callback: async header => {
+      const folder = await fromUuid(header.closest(".directory-item")[0].dataset.uuid);
+      if (!folder) return;
+      const name = await foundry.applications.api.DialogV2.prompt({
+        window: {title: `Rename "${folder.name}"`},
+        content: `<input type="text" name="name" value="${foundry.utils.escapeHTML(folder.name)}" autofocus>`,
+        ok: {callback: (_event, button) => button.form.elements.name.value.trim()},
+        rejectClose: false
+      });
+      if (name && name !== folder.name) await folder.update({name});
+    }
+  });
   return options;
 };
 
@@ -89,5 +107,37 @@ Compendium.prototype._getEntryContextOptions = function () {
       option.condition = () => (game.user.isGM || canManagePack(this.collection)) && !this.collection.locked;
     }
   }
+  const deleteIndex = options.findIndex(o => o.name === "COMPENDIUM.DeleteEntry");
+  const canEdit = () => (game.user.isGM || canManagePack(this.collection)) && !this.collection.locked
+    && this.collection.documentName !== "Adventure";
+  options.splice(deleteIndex < 0 ? options.length : deleteIndex, 0, {
+    name: "Rename",
+    icon: '<i class="fas fa-pen"></i>',
+    condition: canEdit,
+    callback: async li => {
+      const source = await this.collection.getDocument(li.data("document-id"));
+      if (!source) return;
+      const name = await foundry.applications.api.DialogV2.prompt({
+        window: {title: `Rename "${source.name}"`},
+        content: `<input type="text" name="name" value="${foundry.utils.escapeHTML(source.name)}" autofocus>`,
+        ok: {callback: (_event, button) => button.form.elements.name.value.trim()},
+        rejectClose: false
+      });
+      if (name && name !== source.name) await source.update({name});
+    }
+  }, {
+    name: "Clone",
+    icon: '<i class="fas fa-copy"></i>',
+    condition: canEdit,
+    callback: async li => {
+      const source = await this.collection.getDocument(li.data("document-id"));
+      if (!source) return;
+      const data = source.toObject();
+      delete data._id;
+      data.name = `${source.name} (Copy)`;
+      const clone = await source.constructor.create(data, {pack: this.collection.collection});
+      ui.notifications.info(`Cloned "${source.name}" as "${clone.name}"`);
+    }
+  });
   return options;
 };

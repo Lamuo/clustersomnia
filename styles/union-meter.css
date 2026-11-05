@@ -1,50 +1,79 @@
-#clustersomnia-union {
+.cu-floating {
   position: fixed;
   z-index: 60;
   pointer-events: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-#clustersomnia-union.editable .cu-meter,
-#clustersomnia-union.editable .cu-partner.clickable {
-  pointer-events: auto;
-}
-
-#clustersomnia-union .cu-row {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
 
+.cu-floating.editable .cu-meter,
+.cu-floating.editable .cu-partner.clickable {
+  pointer-events: auto;
+}
+
+.cu-host .cu-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* A faint dark veil that fades to the right keeps the text readable over any map. */
+  padding: 2px 14px 2px 2px;
+  background: linear-gradient(90deg, rgb(16 10 9 / 0.5), rgb(16 10 9 / 0.22) 55%, transparent);
+  border-radius: calc(46px * var(--cu-s)) 0 0 calc(46px * var(--cu-s));
+}
+
 /* --cu-s (scale), --cu-w (artwork width) and --cu-icon (portrait size) are set from script. */
-#clustersomnia-union .cu-portrait,
-#clustersomnia-union .cu-partner {
+.cu-host .cu-portrait {
   width: calc(var(--cu-icon) * var(--cu-s));
   height: calc(var(--cu-icon) * var(--cu-s));
 }
 
-#clustersomnia-union .cu-portrait {
+/* The ready bubbles are small badges, about a line and a half tall, not portraits. */
+.cu-host .cu-partner {
+  width: calc(30px * var(--cu-s));
+  height: calc(30px * var(--cu-s));
+}
+
+.cu-host .cu-portrait {
   flex: none;
   translate: 0 calc(var(--cu-shift) * var(--cu-s));
   border: 2px solid #e8dcc4;
   border-radius: 50%;
   object-fit: cover;
   background: #150e0d;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.75), inset 0 0 8px rgb(0 0 0 / 0.55);
   filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.6));
+  transition: border-color 0.3s;
 }
 
-#clustersomnia-union .cu-main {
+/* The portrait ring echoes the HP state. */
+.cu-host .cu-row:has(.cu-hp.injured) .cu-portrait {
+  border-color: var(--cu-hp-injured, #f0a030);
+}
+
+.cu-host .cu-row:has(.cu-hp.down) .cu-portrait {
+  border-color: var(--cu-hp-down, #d03a3a);
+}
+
+.cu-host .cu-main {
   display: flex;
   flex-direction: column;
   gap: 1px;
 }
 
-#clustersomnia-union .cu-name {
-  max-width: calc(var(--cu-w) * var(--cu-s));
+/* Name, then the stats on fixed columns so they line up from one card to the next. */
+.cu-host .cu-head {
+  display: flex;
+  align-items: baseline;
+  gap: calc(6px * var(--cu-s));
+}
+
+.cu-host .cu-name {
+  flex: 0 0 calc(84px * var(--cu-s));
+  min-width: 0;
   overflow: hidden;
-  font-size: 12px;
+  font-family: var(--cu-font);
+  font-size: calc(26px * var(--cu-s));
   font-weight: bold;
   line-height: 1.2;
   white-space: nowrap;
@@ -53,46 +82,250 @@
   text-shadow: 0 0 3px #000, 0 0 3px #000;
 }
 
-#clustersomnia-union .cu-line {
+/* Party details. Sizes are written at scale 1 and follow --cu-s like the artwork. */
+.cu-host .cu-stats,
+.cu-host .cu-extras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(4px * var(--cu-s)) calc(10px * var(--cu-s));
+  max-width: calc(var(--cu-w) * 1.5 * var(--cu-s));
+  font-size: calc(20px * var(--cu-s));
+  line-height: 1.2;
+  color: #f6ecd6;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: auto;
+}
+
+.cu-host .cu-extras[hidden] {
+  display: none;
+}
+
+.cu-host .cu-stats {
+  flex: none;
+  display: grid;
+  grid-template-columns: calc(64px * var(--cu-s)) calc(64px * var(--cu-s)) calc(52px * var(--cu-s)) calc(52px * var(--cu-s));
+  gap: 0 calc(6px * var(--cu-s));
+}
+
+/* Healing rate sits right of the HP bar. */
+.cu-host .cu-hr {
+  white-space: nowrap;
+  font-size: calc(20px * var(--cu-s));
+  line-height: 1.2;
+  color: #f6ecd6;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: auto;
+}
+
+.cu-host .cu-stat {
+  white-space: nowrap;
+}
+
+.cu-host .cu-stat,
+.cu-host .cu-hr {
+  font-weight: bold;
+}
+
+.cu-host .cu-stat-label {
+  font-weight: normal;
+  color: #cdb68a;
+}
+
+
+.cu-host .cu-effect {
+  width: calc(24px * var(--cu-s));
+  height: calc(24px * var(--cu-s));
+  border: 1px solid #cdb68a;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #150e0d;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+}
+
+/* Plain text like "Spellguard 2/3", on the same line as the effect icons. */
+.cu-host .cu-counter {
+  white-space: nowrap;
+}
+
+/* Solid bar with the current HP written inside it. */
+.cu-host .cu-hp {
+  --cu-hp-color: var(--cu-hp-ok, #4cc46a);
+  display: flex;
+  align-items: center;
+  gap: calc(10px * var(--cu-s));
+  /* Room between the HP bar and the union bar, tags and the rest below it. */
+  margin-bottom: calc(5px * var(--cu-s));
+}
+
+.cu-host .cu-hp-bar {
+  position: relative;
+  flex: none;
+  width: calc(var(--cu-w) * 0.62 * var(--cu-s));
+  height: calc(26px * var(--cu-s));
+  overflow: hidden;
+  background: linear-gradient(rgb(0 0 0 / 0.55), rgb(30 20 17 / 0.9));
+  border: 1px solid #e8dcc4;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.8);
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.6));
+  /* The stack ignores the pointer; the bar needs it for the hover buttons. */
+  pointer-events: auto;
+}
+
+.cu-host .cu-hp.injured {
+  --cu-hp-color: var(--cu-hp-injured, #f0a030);
+}
+
+.cu-host .cu-hp.down {
+  --cu-hp-color: var(--cu-hp-down, #d03a3a);
+}
+
+.cu-host .cu-hp-fill {
+  height: 100%;
+  /* Light from above, and a bright edge where the bar ends. */
+  background:
+    linear-gradient(rgb(255 255 255 / 0.32), rgb(255 255 255 / 0) 48%, rgb(0 0 0 / 0.28)),
+    var(--cu-hp-color);
+  box-shadow: inset -2px 0 0 rgb(255 255 255 / 0.4);
+  transition: width 0.18s ease-out, background-color 0.2s;
+}
+
+.cu-host .cu-hp-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(20px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1;
+  white-space: nowrap;
+  color: #fff;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+}
+
+/* "−" (damage) at the left end of the bar and "+" (heal) at the right: each is a full-height click zone. */
+.cu-host .cu-hp-controls {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.cu-host .cu-hp-controls button {
+  width: calc(30px * var(--cu-s));
+  height: 100%;
+  min-width: 12px;
+  margin: 0;
+  padding: 0;
+  font-size: calc(22px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1;
+  background: rgb(21 14 13 / 0.55);
+  color: #fff;
+  border: none;
+  border-radius: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cu-host .cu-hp-bar:hover .cu-hp-controls button {
+  opacity: 1;
+}
+
+.cu-host .cu-hp-controls button:hover {
+  background: rgb(21 14 13 / 0.85);
+}
+
+.cu-host .cu-line {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-#clustersomnia-union .cu-meter {
+.cu-host .cu-meter {
   position: relative;
   flex: none;
   width: calc(var(--cu-w) * var(--cu-s));
   filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.6));
 }
 
-#clustersomnia-union .cu-partners {
+/* Zero height: the bubbles are bigger than the bar and must not stretch the row. */
+.cu-host .cu-partners {
   display: flex;
+  align-items: center;
+  height: 0;
   gap: 4px;
 }
 
-#clustersomnia-union .cu-partner {
-  border: 2px solid #2de0c4;
+/* "Segments" skins: one small slanted tile per union point, like ▰▰▰▱▱. */
+.cu-host .cu-meter:has(.cu-segments) {
+  width: auto;
+  aspect-ratio: auto !important;
+}
+
+.cu-host .cu-segments {
+  display: flex;
+  gap: calc(4px * var(--cu-s));
+  padding-left: calc(4px * var(--cu-s));
+}
+
+.cu-host .cu-segment {
+  width: calc(16px * var(--cu-s));
+  height: calc(20px * var(--cu-s));
+  background: var(--cu-seg-off);
+  border: 1px solid color-mix(in srgb, var(--cu-seg-border) 40%, transparent);
+  border-radius: 1px;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.7);
+  transform: skewX(-24deg);
+  transition: background 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+
+.cu-host .cu-segment.on {
+  background: linear-gradient(var(--seg-hi, var(--cu-seg-on2)), var(--seg-c, var(--cu-seg-on)));
+  border-color: var(--cu-seg-border);
+  box-shadow: 0 0 calc(8px * var(--cu-s)) var(--seg-c, var(--cu-seg-on)), inset 0 1px 0 rgb(255 255 255 / 0.55);
+}
+
+/* With a gradient, an unlit tile keeps a faint tint of the colour it will light up with. */
+.cu-host .cu-segment[style*="--seg-c"]:not(.on) {
+  background: color-mix(in srgb, var(--seg-c) 16%, var(--cu-seg-off));
+}
+
+.cu-host .cu-union-label {
+  flex: none;
+  font-size: calc(20px * var(--cu-s));
+  white-space: nowrap;
+  color: #f6ecd6;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+}
+
+.cu-host .cu-partner {
+  border: 1px solid var(--cu-ready, #2de0c4);
   border-radius: 50%;
   object-fit: cover;
   background: #000;
-  box-shadow: 0 0 8px #2de0c4;
+  box-shadow: 0 0 8px var(--cu-ready, #2de0c4);
   animation: cu-ready 1.6s ease-in-out infinite;
 }
 
-#clustersomnia-union .cu-partner.clickable {
+.cu-host .cu-partner.clickable {
   cursor: pointer;
 }
 
-#clustersomnia-union.still-bubbles .cu-partner {
+.cu-host.still-bubbles .cu-partner {
   animation: none;
 }
 
 @keyframes cu-ready {
-  50% { box-shadow: 0 0 14px 2px #2de0c4; }
+  50% { box-shadow: 0 0 14px 2px var(--cu-ready, #2de0c4); }
 }
 
-#clustersomnia-union .cu-layer {
+.cu-host .cu-layer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -101,11 +334,11 @@
   user-select: none;
 }
 
-#clustersomnia-union .cu-fill {
+.cu-host .cu-fill {
   transition: clip-path 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-#clustersomnia-union .cu-text {
+.cu-host .cu-text {
   position: absolute;
   font-weight: 900;
   line-height: 1;
@@ -113,7 +346,7 @@
   paint-order: stroke fill;
 }
 
-#clustersomnia-union .cu-meter.pulse {
+.cu-host .cu-meter.pulse {
   animation: cu-pulse 0.45s ease-out;
 }
 
@@ -123,7 +356,7 @@
   100% { transform: scale(1); }
 }
 
-#clustersomnia-union .cu-controls {
+.cu-host .cu-controls {
   position: absolute;
   left: 5%;
   top: 50%;
@@ -134,11 +367,11 @@
   transition: opacity 0.15s;
 }
 
-#clustersomnia-union .cu-meter:hover .cu-controls {
+.cu-host .cu-meter:hover .cu-controls {
   opacity: 1;
 }
 
-#clustersomnia-union .cu-controls button {
+.cu-host .cu-controls button {
   width: 20px;
   height: 20px;
   margin: 0;
@@ -462,7 +695,7 @@
   border-radius: 50%;
 }
 
-#clustersomnia-union .cu-grip {
+.cu-floating .cu-grip {
   position: absolute;
   left: 0;
   bottom: 100%;
@@ -484,16 +717,16 @@
   transition: opacity 0.15s;
 }
 
-#clustersomnia-union:hover .cu-grip,
-#clustersomnia-union.dragging .cu-grip {
+.cu-floating:hover .cu-grip,
+.cu-floating.dragging .cu-grip {
   opacity: 1;
 }
 
-#clustersomnia-union.dragging .cu-grip {
+.cu-floating.dragging .cu-grip {
   cursor: grabbing;
 }
 
-#clustersomnia-union .cu-resize {
+.cu-floating .cu-resize {
   position: absolute;
   right: 0;
   top: 100%;
@@ -512,17 +745,529 @@
   transition: opacity 0.15s;
 }
 
-#clustersomnia-union:hover .cu-resize,
-#clustersomnia-union.dragging .cu-resize {
+.cu-floating:hover .cu-resize,
+.cu-floating.dragging .cu-resize {
   opacity: 1;
 }
 
 /* Skins with "portraitControls": the portrait itself raises (left click) and lowers (right click). */
-#clustersomnia-union.editable .cu-portrait.adjustable {
+.cu-host.editable .cu-portrait.adjustable {
   pointer-events: auto;
   cursor: pointer;
 }
 
-#clustersomnia-union .cu-portrait.adjustable:hover {
+.cu-host .cu-portrait.adjustable:hover {
   border-color: #fff;
+}
+
+/* -------------------------------------------- */
+/*  Party cards inside the Combat Tracker        */
+/* -------------------------------------------- */
+
+/* The tracker section: a slim "Party" bar that folds the cards, then the cards. */
+.clustersomnia-party-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  border-bottom: 1px solid var(--color-border-dark-4, #4b4a44);
+}
+
+.clustersomnia-party-wrap .cu-party-toggle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1;
+  color: #cdb68a;
+  background: rgb(0 0 0 / 0.25);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.clustersomnia-party-wrap .cu-party-toggle:hover {
+  color: #f6ecd6;
+  background: rgb(0 0 0 / 0.4);
+}
+
+.clustersomnia-party-wrap .cu-party-toggle i {
+  width: 10px;
+  font-size: 10px;
+}
+
+.clustersomnia-party {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px 10px;
+}
+
+/* Folded: the bar stays, the cards hide. */
+.clustersomnia-party-wrap.collapsed .clustersomnia-party {
+  display: none;
+}
+
+.clustersomnia-party[hidden] {
+  display: none;
+}
+
+/* Icon standing in for the "Unione" label, left of the tiles. */
+.cu-host .cu-union-icon {
+  flex: none;
+  width: calc(26px * var(--cu-s));
+  height: calc(26px * var(--cu-s));
+  object-fit: contain;
+  margin-right: -4px;
+  border: none;
+  border-radius: 0;
+  filter: drop-shadow(0 0 2px #000);
+}
+
+/* -------------------------------------------- */
+/*  Detaching a card into its own window         */
+/* -------------------------------------------- */
+
+.cu-floating[hidden] {
+  display: none;
+}
+
+.cu-floating .cu-popout {
+  position: absolute;
+  left: 48px;
+  bottom: 100%;
+  width: 24px;
+  height: 16px;
+  margin: 0 0 2px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  color: #e8dcc4;
+  background: rgb(21 14 13 / 0.85);
+  border: 1px solid #e8dcc4;
+  border-radius: 8px 8px 0 0;
+  opacity: 0.35;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.15s;
+}
+
+.cu-floating:hover .cu-popout {
+  opacity: 1;
+}
+
+/* In its own window the card fills the top-left corner and the window fits it; no handles needed there. */
+.cu-floating.cu-detached {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+.cu-floating.cu-detached .cu-grip,
+.cu-floating.cu-detached .cu-popout,
+.cu-floating.cu-detached .cu-resize {
+  display: none;
+}
+
+/* Skins with "portraitControls": the HP bar itself takes left click (heal) and right click (hurt). */
+.cu-host .cu-hp-bar.adjustable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.cu-host .cu-hp-bar.adjustable:hover {
+  border-color: #fff;
+}
+
+/* Skins with "portraitControls": the union bar and its icon take left click (+1) and right click (-1). */
+.cu-host.editable .cu-meter.adjustable,
+.cu-host.editable .cu-union-icon.adjustable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cu-host.editable .cu-union-icon.adjustable:hover {
+  filter: drop-shadow(0 0 3px #fff);
+}
+
+/* A portrait click expands or folds the card; works for everyone, so it needs the pointer even in the stack. */
+.cu-host .cu-portrait.expandable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cu-host .cu-portrait.expandable:hover {
+  border-color: #fff;
+}
+
+/* A sheet moved into its own browser window fills it; its own position, size and drag no longer apply. */
+.app.cu-app-detached {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.app.cu-app-detached .window-resizable-handle {
+  display: none;
+}
+
+.app.cu-app-detached .window-header {
+  cursor: default;
+}
+
+/* A counter with an icon: just the icon and the current value in a badge that pokes out of its corner. */
+.cu-host .cu-counter-icon {
+  position: relative;
+  flex: none;
+  width: calc(24px * var(--cu-s));
+  height: calc(24px * var(--cu-s));
+  margin-right: calc(4px * var(--cu-s));
+}
+
+.cu-host .cu-counter-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: 1px solid #cdb68a;
+  border-radius: 4px;
+  background: #150e0d;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+  transition: filter 0.3s;
+}
+
+.cu-host .cu-counter-badge {
+  position: absolute;
+  top: calc(-7px * var(--cu-s));
+  right: calc(-9px * var(--cu-s));
+  box-sizing: border-box;
+  min-width: calc(17px * var(--cu-s));
+  height: calc(17px * var(--cu-s));
+  padding: 0 calc(4px * var(--cu-s));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cu-font);
+  font-size: calc(14px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1;
+  color: #fff1cf;
+  text-shadow: 0 0 2px #000;
+  background: linear-gradient(#3a2219, #150e0d);
+  border: 1px solid var(--cu-ready, #ffb347);
+  border-radius: 999px;
+  box-shadow: 0 0 calc(6px * var(--cu-s)) color-mix(in srgb, var(--cu-ready, #ffb347) 55%, transparent), 0 1px 2px #000;
+}
+
+/* At zero the icon dims, so what is spent reads at a glance. */
+.cu-host .cu-counter-icon.empty img {
+  filter: grayscale(0.8) brightness(0.55);
+}
+
+.cu-host .cu-counter-icon.empty .cu-counter-badge {
+  color: #a08f78;
+  border-color: #6b5a4a;
+  box-shadow: 0 1px 2px #000;
+}
+
+/* The box of a counter with no icon: the initials of its name. */
+.cu-host .cu-counter-initials {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--cu-font);
+  font-size: calc(13px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1;
+  color: #e8dcc4;
+  background: linear-gradient(#3a2a22, #1a1210);
+  border: 1px solid #cdb68a;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
+  transition: filter 0.3s;
+}
+
+.cu-host .cu-counter-icon.empty .cu-counter-initials {
+  filter: grayscale(0.8) brightness(0.65);
+}
+
+/* Quick-glance tags on a compact card (Atk, Def, Agi...): plain text like the stats, with stacked chevron arrows.
+   Every buff or debuff entry adds an arrow; three arrows fill a tier and the next one starts over in a hotter
+   colour. Buffs go white-yellow, orange, hot red; debuffs go light violet, violet, deep violet. */
+/* Tags sit in equal rows on shared columns (--tag-cols is set from script: up to 7 per row, then the rest is
+   shared out evenly), so a long list never leaves one tag alone on a short last line. */
+.cu-host .cu-tags {
+  display: grid;
+  grid-template-columns: repeat(var(--tag-cols, 7), max-content);
+  justify-content: start;
+  align-items: baseline;
+  gap: calc(2px * var(--cu-s)) calc(12px * var(--cu-s));
+  max-width: calc(var(--cu-w) * 1.5 * var(--cu-s));
+  pointer-events: auto;
+}
+
+.cu-host .cu-tags[hidden] {
+  display: none;
+}
+
+.cu-host .cu-tag {
+  --tag: #fff0a8;
+  --glow: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(3px * var(--cu-s));
+  font-family: var(--cu-font);
+  font-size: calc(19px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--tag);
+  text-shadow: 0 0 3px #000, 0 0 3px #000, 0 0 calc(8px * var(--cu-s)) var(--glow);
+}
+
+.cu-host .cu-tag.up.tier-1 {
+  --tag: #ff9a2e;
+  --glow: #ff7a1a;
+}
+
+.cu-host .cu-tag.up.tier-2 {
+  --tag: #ff5a3c;
+  --glow: #ff3a1a;
+}
+
+.cu-host .cu-tag.down {
+  --tag: #cdb4f8;
+}
+
+.cu-host .cu-tag.down.tier-1 {
+  --tag: #a06cee;
+  --glow: #8a52e0;
+}
+
+.cu-host .cu-tag.down.tier-2 {
+  --tag: #7c4ee0;
+  --glow: #9a6cf0;
+}
+
+.cu-host .cu-tag.more {
+  --tag: #cdb68a;
+  font-weight: normal;
+}
+
+/* A chevron made of two borders; further arrows stack just above the first, like a ranking mark. */
+.cu-host .cu-tag-arrows {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: calc(2px * var(--cu-s));
+}
+
+.cu-host .cu-tag-arrows i {
+  width: calc(8px * var(--cu-s));
+  height: calc(8px * var(--cu-s));
+  box-sizing: border-box;
+  border-top: calc(3px * var(--cu-s)) solid var(--tag);
+  border-left: calc(3px * var(--cu-s)) solid var(--tag);
+  transform: rotate(45deg);
+  filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 calc(4px * var(--cu-s)) var(--glow));
+}
+
+.cu-host .cu-tag-arrows i + i {
+  margin-top: calc(-4px * var(--cu-s));
+}
+
+.cu-host .cu-tag.down .cu-tag-arrows i {
+  transform: rotate(225deg);
+}
+
+/* -------------------------------------------- */
+/*  The special last step (the 10th, up or down) */
+/*  Arrows give way to an emblem, and the label  */
+/*  moves: a gold glint crossing a buff, a slow  */
+/*  violet pulse in a debuff.                    */
+/* -------------------------------------------- */
+
+.cu-host .cu-tag.special {
+  gap: calc(5px * var(--cu-s));
+  text-shadow: none;
+}
+
+.cu-host .cu-tag-label {
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: cu-tag-glint 3.2s linear infinite;
+}
+
+.cu-host .cu-tag.up.special .cu-tag-label {
+  background-image: linear-gradient(100deg, #ffc84a 0%, #ffe9a0 30%, #ffffff 46%, #ffe9a0 58%, #ffb347 100%);
+  filter: drop-shadow(0 0 calc(5px * var(--cu-s)) #ffa526) drop-shadow(0 0 2px #000);
+}
+
+.cu-host .cu-tag.down.special .cu-tag-label {
+  background-image: linear-gradient(100deg, #9a6cf0 0%, #6d3fd1 40%, #c7a8ff 52%, #5a2fb8 70%, #8b5cff 100%);
+  filter: drop-shadow(0 0 calc(6px * var(--cu-s)) #7c4ee0) drop-shadow(0 0 2px #000);
+  animation-duration: 4.4s;
+}
+
+/* A four-pointed star: bright for a buff, a dark one in a violet frame for a debuff. */
+.cu-host .cu-tag-emblem {
+  position: relative;
+  flex: none;
+  width: calc(13px * var(--cu-s));
+  height: calc(13px * var(--cu-s));
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.cu-host .cu-tag.up .cu-tag-emblem {
+  background: radial-gradient(#ffffff 35%, #ffd25e 70%);
+  animation: cu-tag-twinkle 2.4s ease-in-out infinite;
+}
+
+.cu-host .cu-tag.down .cu-tag-emblem {
+  background: #8b5cff;
+  animation: cu-tag-twinkle 3.4s ease-in-out infinite reverse;
+}
+
+.cu-host .cu-tag.down .cu-tag-emblem::after {
+  content: "";
+  position: absolute;
+  inset: 22%;
+  background: #12071f;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+/* The glow sits on a wrapper so the clipped emblem does not cut it off. */
+.cu-host .cu-tag.up.special {
+  filter: drop-shadow(0 0 calc(4px * var(--cu-s)) rgb(255 170 40 / 0.55));
+}
+
+.cu-host .cu-tag.down.special {
+  filter: drop-shadow(0 0 calc(5px * var(--cu-s)) rgb(124 78 224 / 0.7));
+}
+
+@keyframes cu-tag-glint {
+  from { background-position: 100% 0; }
+  to { background-position: -140% 0; }
+}
+
+@keyframes cu-tag-twinkle {
+  0%, 100% { transform: scale(0.85) rotate(0deg); }
+  50% { transform: scale(1.15) rotate(45deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-host .cu-tag-label,
+  .cu-host .cu-tag-emblem {
+    animation: none;
+  }
+}
+
+/* Spell castings left, beside HR. Nothing is drawn for a PG without spells (the element stays hidden). */
+.cu-host .cu-casts {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4px * var(--cu-s));
+  white-space: nowrap;
+  font-size: calc(20px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1.2;
+  color: #f6ecd6;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: auto;
+}
+
+.cu-host .cu-casts[hidden] {
+  display: none;
+}
+
+.cu-host .cu-casts i {
+  font-size: 0.8em;
+  color: #cdb68a;
+}
+
+/* Out of castings: dimmed, like a spent counter. */
+.cu-host .cu-casts.empty {
+  color: #8a7a68;
+}
+
+/* A PG emblem beside the HP bar (Zoe's umbrella): an icon whose name shows on hover. Hidden when the PG has none. */
+.cu-host .cu-signature {
+  display: inline-flex;
+  align-items: center;
+  font-size: calc(20px * var(--cu-s));
+  line-height: 1.2;
+  color: #ffd25e;
+  text-shadow: 0 0 3px #000, 0 0 calc(6px * var(--cu-s)) rgb(255 170 40 / 0.45);
+  pointer-events: auto;
+  cursor: help;
+}
+
+.cu-host .cu-signature[hidden] {
+  display: none;
+}
+
+.cu-host .cu-signature:hover {
+  color: #fff0a8;
+}
+
+/* The specialization beside the spell counter: an icon and a short name, in the same neutral tones as the text before it. */
+.cu-host .cu-spec {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px * var(--cu-s));
+  white-space: nowrap;
+  font-size: calc(20px * var(--cu-s));
+  font-weight: bold;
+  line-height: 1.2;
+  color: #f6ecd6;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+  pointer-events: auto;
+  cursor: help;
+}
+
+.cu-host .cu-spec[hidden] {
+  display: none;
+}
+
+.cu-host .cu-spec i {
+  font-size: 0.85em;
+  color: #cdb68a;
+}
+
+.cu-host .cu-spec > span {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4px * var(--cu-s));
+}
+
+
+
+/* A small square image for an emblem given as a picture (the FontAwesome ones need no box). */
+.cu-host .cu-mini-icon {
+  flex: none;
+  width: calc(22px * var(--cu-s));
+  height: calc(22px * var(--cu-s));
+  object-fit: cover;
+  border: 1px solid #cdb68a;
+  border-radius: 3px;
+  background: #150e0d;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
 }

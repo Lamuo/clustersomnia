@@ -12,6 +12,9 @@
     <ul class="sotdl-counter-list">
       {{#each counters as |counter|}}
       <li class="sotdl-counter-row" data-counter-row data-counter-id="{{counter.id}}">
+        <button type="button" class="sotdl-counter-icon" data-action="counterIcon" data-counter-id="{{counter.id}}" title="Scegli l'icona (clic destro: toglie)">
+          {{#if counter.icon}}<img src="{{counter.icon}}">{{else}}<i class="fas fa-image"></i>{{/if}}
+        </button>
         <input type="text" class="sotdl-counter-name" value="{{counter.name}}">
         <button type="button" class="sotdl-counter-delta" data-action="counterDelta" data-counter-id="{{counter.id}}" data-delta="-1">−</button>
         <div class="sotdl-counter-fraction">
@@ -27,6 +30,22 @@
       {{/each}}
     </ul>
     <button type="button" data-action="counterAdd">+ Add Counter</button>
+  </section>
+
+  <section class="sotdl-tracker-tags">
+    <div class="sotdl-section-header">Tag (ogni effetto attivo conta da solo; qui aggiungi a mano)</div>
+    <div class="sotdl-tag-buttons">
+      {{#each tags as |tag|}}
+      <button type="button" class="sotdl-tag-button{{#if tag.up}} up{{/if}}{{#if tag.down}} down{{/if}} tier-{{tag.tier}}" data-action="tagCycle" data-tag-id="{{tag.id}}" title="{{tag.name}}: clic sinistro +1 bonus, clic destro +1 penalità">
+        {{tag.label}}{{#if tag.glyphs}} {{tag.glyphs}}{{/if}}
+      </button>
+      {{/each}}
+    </div>
+    {{#if autoTags.length}}
+    <div class="sotdl-tag-auto">Dagli effetti:
+      {{#each autoTags as |tag|}}<span class="sotdl-tag-auto-item {{#if tag.up}}up{{else}}down{{/if}} tier-{{tag.tier}}" title="{{tag.sources}}">{{tag.label}} {{tag.glyphs}}</span> {{/each}}
+    </div>
+    {{/if}}
   </section>
 
   <section class="sotdl-tracker-effects">

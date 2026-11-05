@@ -39,6 +39,97 @@
   gap: 6px;
 }
 
+.sotdl-counter-icon {
+  flex: 0 0 auto;
+  width: 2em !important;
+  height: 2em !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.sotdl-counter-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+}
+
+.sotdl-counter-icon .fas {
+  margin-right: 0 !important;
+}
+
+.sotdl-tracker-tags {
+  margin-top: 10px;
+}
+
+.sotdl-tag-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0;
+}
+
+.sotdl-tag-button {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-width: 3.4em;
+  height: 1.8em !important;
+  padding: 0 6px;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+/* The tier colours follow the party cards: buffs white-yellow, orange, hot red; debuffs three violets. */
+.sotdl-tag-button.up,
+.sotdl-tag-button.down {
+  opacity: 1;
+  color: var(--tier, #fff0a8);
+  border-color: var(--tier, #fff0a8);
+}
+
+.sotdl-tag-button.up,
+.sotdl-tag-auto-item.up {
+  --tier: #fff0a8;
+}
+
+.sotdl-tag-button.up.tier-1,
+.sotdl-tag-auto-item.up.tier-1 {
+  --tier: #ff9a2e;
+}
+
+.sotdl-tag-button.up.tier-2,
+.sotdl-tag-auto-item.up.tier-2 {
+  --tier: #ff5a3c;
+}
+
+.sotdl-tag-button.down,
+.sotdl-tag-auto-item.down {
+  --tier: #cdb4f8;
+}
+
+.sotdl-tag-button.down.tier-1,
+.sotdl-tag-auto-item.down.tier-1 {
+  --tier: #a06cee;
+}
+
+.sotdl-tag-button.down.tier-2,
+.sotdl-tag-auto-item.down.tier-2 {
+  --tier: #7c4ee0;
+}
+
+.sotdl-tag-auto {
+  font-size: 0.85em;
+  opacity: 0.85;
+}
+
+.sotdl-tag-auto-item {
+  color: var(--tier);
+}
+
 .sotdl-counter-name {
   flex: 1 1 auto;
   min-width: 1px;
@@ -246,4 +337,99 @@
 
 .sotdl-effects-config-footer button {
   flex: 1;
+}
+
+/* The special last step in the Tracker: a brighter star and a deeper violet cross. */
+.sotdl-tag-button.up.tier-3,
+.sotdl-tag-auto-item.up.tier-3 {
+  --tier: #ffe9a0;
+}
+
+.sotdl-tag-button.down.tier-3,
+.sotdl-tag-auto-item.down.tier-3 {
+  --tier: #8b5cff;
+}
+
+/* Damage by size on the weapon sheet. The sheet gives every row a fixed height, so this section grows with its
+   table (one line per size) and its label stays level with the first line, like the other rows. */
+.application.demonlord-v2-item .dl-item-section.cs-damage-by-size {
+  height: auto;
+  align-items: flex-start;
+}
+
+.cs-damage-by-size > b {
+  line-height: 22px;
+}
+
+.cs-damage-by-size .dl-item-section-column {
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  gap: 4px;
+}
+
+.cs-damage-by-size .cs-size {
+  min-width: 4.5em;
+}
+
+/* "Add a size": the same shape as the Damage row above, the plus sitting at the right edge like its own plus. */
+.cs-damage-by-size .cs-add {
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.cs-damage-by-size .cs-add-label {
+  flex: 1;
+  text-align: center;
+}
+
+.cs-damage-by-size .cs-add:hover,
+.cs-damage-by-size .cs-add:focus-visible {
+  opacity: 1;
+  outline: none;
+  filter: brightness(1.25);
+}
+
+.cs-damage-by-size .cs-add:focus-visible {
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+.cs-damage-by-size .cs-remove {
+  cursor: pointer;
+}
+
+.cs-damage-by-size .cs-remove:hover {
+  filter: brightness(1.3);
+}
+
+/* The size-rule switch: the label on the left, an on/off icon at the right edge like the buttons of the rows below
+   (the sheet hides native checkboxes). Gold when the rule is on. */
+.cs-damage-by-size .cs-rule {
+  cursor: pointer;
+}
+
+.cs-damage-by-size .cs-rule-label {
+  flex: 1;
+}
+
+.cs-damage-by-size .cs-rule-icon {
+  flex: none;
+  margin-right: 4px;
+  font-size: 18px;
+  opacity: 0.55;
+}
+
+.cs-damage-by-size .cs-rule.on .cs-rule-icon {
+  opacity: 1;
+  color: #ffd25e;
+}
+
+.cs-damage-by-size .cs-rule:hover,
+.cs-damage-by-size .cs-rule:focus-visible {
+  outline: none;
+  filter: brightness(1.2);
+}
+
+.cs-damage-by-size .cs-rule:focus-visible {
+  box-shadow: 0 0 0 1px currentColor;
 }
