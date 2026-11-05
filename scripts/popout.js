@@ -112,6 +112,10 @@ export function popOutApp(app) {
   el.classList.add("cu-app-detached");
   win.document.body.append(el);
 
+  // The browser's own right-click menu is useless here and pops up over right-click controls (ammo -1, etc.);
+  // only the default is cancelled, so the sheet's own contextmenu handlers still run.
+  win.document.addEventListener("contextmenu", event => event.preventDefault());
+
   const closeWithMain = () => win.close();
   window.addEventListener("beforeunload", closeWithMain);
   // A sheet closed while detached takes its browser window with it (the hook is the one of its own class).
