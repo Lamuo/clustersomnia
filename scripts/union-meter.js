@@ -29,8 +29,8 @@ function miniIcon(src) {
 const MODULE_ID = "clustersomnia";
 const SOCKET_CHANNEL = "module.clustersomnia";
 const ROOT_ID = "clustersomnia-union";
-const PRESET_SKINS = { ember: "Ember", minimal: "Minimal" };
-const DEFAULT_SKIN = "ember";
+const PRESET_SKINS = { "daniele-v1": "Daniele v1" };
+const DEFAULT_SKIN = "daniele-v1";
 
 const skinCache = new Map();
 

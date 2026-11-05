@@ -1,8 +1,8 @@
 {
-  "name": "Ember",
+  "name": "Daniele v1",
   "width": 320,
   "height": 44,
-  "segments": { "icon": "modules/clustersomnia/skins/ember/union.png", "gradient": ["#2a78ff", "#35d0ff", "#fff0c4", "#ffb02e", "#ff5a1f"], "on": "#ff7a1a", "on2": "#ffd27a", "off": "#120d0c", "border": "#eadfc6" },
+  "segments": { "icon": "modules/clustersomnia/skins/daniele-v1/union.png", "gradient": ["#2a78ff", "#35d0ff", "#fff0c4", "#ffb02e", "#ff5a1f"], "on": "#ff7a1a", "on2": "#ffd27a", "off": "#120d0c", "border": "#eadfc6" },
   "showText": false,
   "font": "'Modesto Condensed', 'Signika', sans-serif",
   "hp": { "ok": "#8fb85a", "injured": "#d9902f", "down": "#b23a2f" },

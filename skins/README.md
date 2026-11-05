@@ -4,12 +4,12 @@ Una skin è una cartella con un `skin.json` e le immagini che usa. Il meter di o
 
 ## Usare una skin
 
-- **Preset inclusi**: `ember` (tasselli obliqui color brace, nome in Modesto Condensed, è il predefinito) e `minimal`, scelti in *Impostazioni modulo → Punti unione: skin*.
+- **Preset inclusi**: `daniele-v1` (tasselli obliqui, nome in Modesto Condensed, unico preset e predefinito), scelto in *Impostazioni modulo → Punti unione: skin*.
 - **Skin tua**: metti la cartella dove vuoi dentro i dati di Foundry (per esempio `Data/skins/mia-skin/`) e selezionala in *Punti unione: cartella skin personalizzata*. Se è impostata, ha la precedenza sul preset.
 - Dopo aver modificato `skin.json` o le immagini ricarica il mondo (F5): il manifest viene letto una volta sola.
-- Se `skin.json` non si trova o non è valido, il meter ripiega su `minimal` e scrive un avviso in console.
+- Se `skin.json` non si trova o non è valido, il meter ripiega su `daniele-v1` e scrive un avviso in console.
 
-Per partire, copia `minimal/` e modificala. Il suo `skin.json` mostra solo le chiavi di base e di comportamento; l'esempio qui sotto elenca anche quelle del testo, per le skin che mostrano un valore.
+Per partire, copia `daniele-v1/` e modificala. Il suo `skin.json` mostra le chiavi di comportamento (barra a tasselli, senza immagini); l'esempio qui sotto elenca anche quelle del testo, per le skin che mostrano un valore.
 
 ## Come è composto il meter
 
@@ -71,7 +71,7 @@ PNG e SVG con trasparenza funzionano senza altro lavoro: ogni livello è un'imma
 | `portraitControls` | `true` toglie i pulsanti − e + al passaggio del mouse sulla barra Unione e li sostituisce con il clic sulla barra stessa (tasselli e icona): clic sinistro +1, clic destro −1, con Maiusc ±5. Vale anche per la barra HP (sinistro cura, destro danno). Solo per chi può modificare i punti. Le bolle dei compagni pronti restano fuori da quest'area. |
 | `bubbleAnimation` | `false` ferma l'alone pulsante sulle icone dei compagni pronti. |
 | `portraitSize` | Diametro in pixel del ritratto del PG e delle icone dei compagni a scala 1. Default: 1,45 volte `height`. |
-| `segments` | Disegna la barra Unione come un tassello obliquo per ogni punto (▰▰▰▱▱) al posto delle immagini: con questa chiave `frame`, `fill`, `overlay` e `track` non servono. Oggetto con `icon` (immagine a sinistra dei tasselli, percorso relativo ai dati di Foundry) e/o `label` (testo dopo i tasselli, nessuno di default) e i colori `on`/`on2` (tassello acceso, dall'alto al basso), `off` (spento) e `border`. Con `gradient` (lista di colori `#…`, per esempio 5) ogni tassello prende un colore diverso lungo la scala, dal primo all'ultimo (sfumati tra una tappa e l'altra, con luce in alto e alone del suo colore); i tasselli spenti conservano una tinta leggera del colore che prenderanno. Senza `gradient` valgono `on`/`on2`. Ember usa blu, ciano, oro chiaro, ambra e arancio, presi dall'icona. I tasselli sono al massimo 20. |
+| `segments` | Disegna la barra Unione come un tassello obliquo per ogni punto (▰▰▰▱▱) al posto delle immagini: con questa chiave `frame`, `fill`, `overlay` e `track` non servono. Oggetto con `icon` (immagine a sinistra dei tasselli, percorso relativo ai dati di Foundry) e/o `label` (testo dopo i tasselli, nessuno di default) e i colori `on`/`on2` (tassello acceso, dall'alto al basso), `off` (spento) e `border`. Con `gradient` (lista di colori `#…`, per esempio 5) ogni tassello prende un colore diverso lungo la scala, dal primo all'ultimo (sfumati tra una tappa e l'altra, con luce in alto e alone del suo colore); i tasselli spenti conservano una tinta leggera del colore che prenderanno. Senza `gradient` valgono `on`/`on2`. Daniele v1 usa blu, ciano, oro chiaro, ambra e arancio, presi dall'icona. I tasselli sono al massimo 20. |
 | `font` | Valore CSS di `font-family` per il nome del PG sopra la barra (default: quello di Foundry). |
 | `hp` | Colori della barra HP: `{ "ok": "#…", "injured": "#…", "down": "#…" }`: sono i tre punti (100%, 50%, 0%) tra cui il colore sfuma. Quelli omessi restano verde, ambra e rosso. |
 | `readyColor` | Colore dell'alone delle icone dei compagni pronti (default turchese). |
