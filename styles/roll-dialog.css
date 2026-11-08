@@ -1,0 +1,92 @@
+/* Quick-pick chips in the system's roll dialog. Scoped to the rows we add (.cs-*).
+   The dialog sits on light parchment, so the ink colours are dark and the hover state is a solid fill. */
+
+.window-app .challengedialog.cs-row { display: flex; align-items: center; margin: 2px 0; }
+
+.cs-quick { margin: 4px 4px 12px; }
+
+.cs-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.window-app .cs-chip {
+  --ink: #3a362e;
+  flex: 1 1 0; min-width: 40px; height: 32px; margin: 0; padding: 0; line-height: 1;
+  font-family: inherit; font-weight: 800; font-size: 14px; color: var(--ink);
+  background: rgba(255, 255, 255, .7); border: 2px solid var(--ink); border-radius: 16px;
+  cursor: pointer; box-shadow: none; text-shadow: none; transition: background .12s, color .12s;
+}
+/* banes violet, boons gold; modifier minus red, plus green */
+.window-app .cs-chip.cs-bane { --ink: #5a2c9c; }
+.window-app .cs-chip.cs-boon { --ink: #7a4f00; }
+.window-app .cs-chip.cs-neg { --ink: #9b1c1c; }
+.window-app .cs-chip.cs-pos { --ink: #1c6b38; }
+.window-app .cs-chip:hover { background: var(--ink); color: #fff; }
+.window-app .cs-chip:active { transform: scale(.96); }
+.window-app .cs-chip:focus-visible { outline: 3px solid #2a6fdb; outline-offset: 1px; }
+.window-app .cs-chip.cs-clear { flex: 0 0 40px; }
+
+/* a field that holds a value is outlined, so it shows what will be rolled */
+input#boonsbanes.cs-set, input#modifier.cs-set { border-color: #8a5a00; box-shadow: 0 0 0 1px #8a5a00; }
+
+@media (prefers-reduced-motion: reduce) {
+  .window-app .cs-chip { transition: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Genesis: the element row in the attack dialog                       */
+/* ------------------------------------------------------------------ */
+
+.cs-genesis { margin: 2px 4px 8px; padding: 8px; background: rgba(255, 255, 255, .45); border: 2px solid #3a362e; border-radius: 6px; }
+.cs-genesis-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; font-size: 13px; }
+.cs-genesis-preview { font-weight: 700; text-align: right; }
+.cs-genesis-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+.cs-styles .cs-genesis-grid, .cs-giganto .cs-genesis-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.window-app .cs-el {
+  --ink: color-mix(in srgb, var(--el) 55%, #1d1a14);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  min-width: 0; height: auto; margin: 0; padding: 5px 1px 4px; line-height: 1.1;
+  font-family: inherit; font-size: 11px; font-weight: 800; letter-spacing: -0.2px; color: #2b2418;
+  background: rgba(255, 255, 255, .7); border: 2px solid var(--ink); border-radius: 6px;
+  cursor: pointer; box-shadow: none; text-shadow: none;
+  transition: background .12s, transform .12s;
+}
+.window-app .cs-el img { width: 32px; height: 32px; border: 0; object-fit: contain; }
+.window-app .cs-el:hover { background: color-mix(in srgb, var(--el) 22%, #fff); transform: translateY(-1px); }
+.window-app .cs-el.active { background: color-mix(in srgb, var(--el) 60%, #fff); box-shadow: 0 0 0 2px var(--el); }
+.window-app .cs-el:focus-visible { outline: 3px solid #2a6fdb; outline-offset: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .window-app .cs-el { transition: none; }
+  .window-app .cs-el:hover { transform: none; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Genesis: the config window                                           */
+/* ------------------------------------------------------------------ */
+
+.sotdl-genesis-config-app .window-content { padding: 0; overflow: hidden; }
+.sotdl-genesis-config { display: flex; flex-direction: column; height: 100%; }
+.sotdl-genesis-config .gc-base { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 0; }
+.sotdl-genesis-config .gc-tabs { display: flex; gap: 4px; border-bottom: 1px solid rgb(255 255 255 / .2); }
+.sotdl-genesis-config .gc-tab { flex: 0 0 auto; width: auto; height: 30px; padding: 0 14px; border-radius: 4px 4px 0 0; border-bottom: 0; opacity: .7; }
+.sotdl-genesis-config .gc-tab.active { opacity: 1; font-weight: 700; background: rgb(255 255 255 / .12); }
+.sotdl-genesis-config .gc-pane { display: none; flex: 1; min-height: 0; flex-direction: column; }
+.sotdl-genesis-config .gc-pane.active { display: flex; }
+.sotdl-genesis-config .gc-pane-base { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; padding: 10px 12px; border-bottom: 1px solid rgb(255 255 255 / .15); }
+.sotdl-genesis-config .gc-pane-base p { grid-column: 1 / -1; margin: 0; font-size: 12px; opacity: .8; }
+.sotdl-genesis-config .gc-list { flex: 1; min-height: 0; overflow-y: auto; padding: 10px 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+
+.sotdl-genesis-config .gc-field { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.sotdl-genesis-config .gc-field > span { opacity: .85; }
+.sotdl-genesis-config .gc-wide { grid-column: 1 / -1; }
+
+.sotdl-genesis-config .gc-el, .sotdl-genesis-config .gc-st, .sotdl-genesis-config .gc-gi { display: flex; gap: 10px; padding: 8px 10px 8px 8px; border: 1px solid rgb(255 255 255 / .15); border-left: 5px solid var(--el); border-radius: 4px; background: rgb(0 0 0 / .2); }
+.sotdl-genesis-config .gc-pic { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.sotdl-genesis-config .gc-icon { width: 64px; height: 64px; padding: 0; border: 1px solid rgb(255 255 255 / .3); border-radius: 6px; background: rgb(0 0 0 / .3); cursor: pointer; }
+.sotdl-genesis-config .gc-icon img { width: 100%; height: 100%; border: 0; object-fit: contain; }
+.sotdl-genesis-config .gc-small { height: 22px; width: 64px; padding: 0; line-height: 1; font-size: 11px; }
+.sotdl-genesis-config .gc-fields { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+.sotdl-genesis-config textarea { resize: vertical; min-height: 54px; }
+
+.sotdl-genesis-config .gc-footer { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid rgb(255 255 255 / .15); }
+.sotdl-genesis-config .gc-spacer { flex: 1; }
+.sotdl-genesis-config .gc-save { font-weight: 700; }

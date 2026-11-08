@@ -11,7 +11,9 @@ function openWindow(key, fallback) {
   const place = Number.isFinite(saved.x) ? `,left=${saved.x},top=${saved.y}` : "";
   const win = window.open("", `clustersomnia-${key}`, `popup=yes,${size}${place}`);
   if (!win) {
-    ui.notifications.warn("Il browser ha bloccato la finestra: consenti i popup per questo sito.");
+    ui.notifications.warn(/Electron/i.test(navigator.userAgent)
+      ? "L'app desktop di Foundry non permette di aprire finestre esterne: per il popout apri il mondo dal browser (http://localhost:30000)."
+      : "Il browser ha bloccato la finestra: consenti i popup per questo sito.");
     return null;
   }
 

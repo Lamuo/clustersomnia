@@ -1,0 +1,15 @@
+{
+  "DL.CharCorruption": "White Coral",
+  "DL.CharInsanity": "Nightmare",
+  "DL.CharRolCorruption": "White Coral Roll",
+  "DL.CreatureCorruption": "White Coral",
+  "DL.CreatureFrighteningDescription": "A creature that does not have the frightening or horrifying trait must make a Will challenge roll when it first sees one or more creatures with this trait. It makes the roll with 1 bane if it can see four or more frightening creatures at once. On a failure, the creature becomes frightened for a number of rounds equal to 1d3 + its Nightmare total or gains 1 Nightmare if it is already frightened. Once a creature makes this roll, whether it succeeds or fails, it cannot again be affected by this trait of the creature or creatures it saw until after it completes a rest.",
+  "DL.CreatureHorrifyingDescription": "A creature that does not have the horrifying trait must make a Will challenge roll when it first sees one or more creatures with this trait. It makes the roll with 1 bane if it can see four or more horrifying creatures at once. On a failure, the creature gains 1 Nightmare, or 1d3 Nightmare if it is already frightened. Once a creature makes this roll, whether it succeeds or fails, it cannot again be affected by this trait of the creature or creatures it saw until after it completes a rest. Regardless of the outcome of the challenge roll, creatures that lack the frightening or horrifying trait make attack rolls against horrifying creatures with 1 bane.",
+  "DL.CreatureInsanity": "Nightmare",
+  "DL.SettingLockAncestrHint": "Remove players access to change modifers, Speed, Nightmare, White Coral and Health.",
+  "DL.CharFortune": "Fabula",
+  "DL.DialogFortuneAwarded": "Awarded a Fabula point.",
+  "DL.DialogFortuneExpended": "Expended a Fabula point.",
+  "CLUSTERSOMNIA.TempHp": "Temp HP",
+  "CLUSTERSOMNIA.TempHpFull": "Temporary Hit Points / Shield"
+}

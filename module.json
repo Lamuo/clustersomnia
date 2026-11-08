@@ -8,13 +8,18 @@
     "minimum": "12",
     "verified": "12"
   },
+  "languages": [
+    { "lang": "en", "name": "English", "path": "lang/en.json" },
+    { "lang": "it", "name": "Italiano", "path": "lang/it.json" }
+  ],
   "esmodules": [
     "scripts/module.js"
   ],
   "styles": [
     "styles/tracker.css",
     "styles/union-meter.css",
-    "styles/compendium-filters.css"
+    "styles/compendium-filters.css",
+    "styles/roll-dialog.css"
   ],
   "authors": [
     {

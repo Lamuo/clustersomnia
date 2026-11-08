@@ -1271,3 +1271,70 @@
   background: #150e0d;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.7);
 }
+
+/* Temporary HP / shield: a segment right after the HP fill, and "+n" beside the HP number. */
+.cu-host .cu-hp-shield {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* A continuous honeycomb (a shield): hexagons share their sides; light from above, over the azure. */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='17.32' height='30' viewBox='0 0 17.32 30'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.6' stroke-width='1.6' stroke-linejoin='round'%3E%3Cpath transform='translate(0 0)' d='M8.66 5L0 10L-8.66 5L-8.66 -5L0 -10L8.66 -5Z'/%3E%3Cpath transform='translate(17.32 0)' d='M8.66 5L0 10L-8.66 5L-8.66 -5L0 -10L8.66 -5Z'/%3E%3Cpath transform='translate(0 30)' d='M8.66 5L0 10L-8.66 5L-8.66 -5L0 -10L8.66 -5Z'/%3E%3Cpath transform='translate(17.32 30)' d='M8.66 5L0 10L-8.66 5L-8.66 -5L0 -10L8.66 -5Z'/%3E%3Cpath transform='translate(8.66 15)' d='M8.66 5L0 10L-8.66 5L-8.66 -5L0 -10L8.66 -5Z'/%3E%3C/g%3E%3C/svg%3E") 0 50% / calc(8.66px * var(--cu-s)) calc(15px * var(--cu-s)),
+    linear-gradient(rgb(255 255 255 / 0.4), rgb(255 255 255 / 0) 48%, rgb(0 0 0 / 0.25)),
+    #5ec8f5;
+  box-shadow: inset 2px 0 0 rgb(255 255 255 / 0.45);
+  transition: left 0.18s ease-out, width 0.18s ease-out;
+  pointer-events: none;
+}
+
+.cu-host .cu-hp-temp {
+  margin-left: 0.35em;
+  color: #9fe3ff;
+}
+
+/* Status icons around the portrait, like the ones over a token: an anchor at the portrait's centre, and each icon is
+   turned by its angle, pushed out to the rim (a little inside it) and turned back upright. The row is the reference. */
+.cu-host .cu-row {
+  position: relative;
+}
+
+.cu-host .cu-status {
+  position: absolute;
+  left: calc(2px + var(--cu-icon) * var(--cu-s) / 2);
+  top: 50%;
+  width: 0;
+  height: 0;
+  translate: 0 calc(var(--cu-shift) * var(--cu-s));
+  pointer-events: none;
+}
+
+.cu-host .cu-status-icon {
+  --size: calc(var(--cu-icon) * var(--cu-s) * 0.3);
+  --radius: calc(var(--cu-icon) * var(--cu-s) * 0.5 - var(--size) * 0.3);
+  position: absolute;
+  left: calc(var(--size) / -2);
+  top: calc(var(--size) / -2);
+  width: var(--size);
+  height: var(--size);
+  /* Foundry gives every img max-width: 100%, and the anchor these hang from is 0 wide. */
+  max-width: none;
+  box-sizing: border-box;
+  padding: 1px;
+  border: 1px solid rgb(232 220 196 / 0.8);
+  border-radius: 50%;
+  background: rgb(16 10 9 / 0.85);
+  object-fit: contain;
+  transform: rotate(var(--a)) translate(var(--radius)) rotate(calc(var(--a) * -1));
+  pointer-events: auto;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.7));
+}
+
+.cu-host .cu-status-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--size) * 0.55);
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+}

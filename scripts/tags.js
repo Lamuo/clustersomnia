@@ -34,7 +34,7 @@ export const TAG_CATEGORIES = [
   { id: "wil", label: "Wil", name: "Volontà", keys: /attributes\.will|challenge\.boons\.will/ },
   { id: "per", label: "Per", name: "Percezione", keys: /attributes\.perception|challenge\.boons\.perception/ },
   { id: "spd", label: "Spd", name: "Velocità", keys: /^system\.characteristics\.speed/ },
-  { id: "hp", label: "HP", name: "Punti ferita", keys: /^system\.characteristics\.health\.max/ },
+  { id: "hp", label: "PV", name: "Punti ferita", keys: /^system\.characteristics\.health\.max/ },
   { id: "pow", label: "Pow", name: "Potere", keys: /^system\.characteristics\.power/ },
   { id: "size", label: "Size", name: "Taglia", keys: /^system\.characteristics\.size/ }
 ];

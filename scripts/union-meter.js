@@ -1,5 +1,6 @@
 import { UnionConfigApp } from "./union-config-app.js";
-import { displayedEffects } from "./persistence.js";
+import { displayedEffects, tokenEffects } from "./persistence.js";
+import { tempHp } from "./temp-hp.js";
 import { popOut, closePopout } from "./popout.js";
 import { effectTags, specializationOf } from "./tags.js";
 
@@ -39,7 +40,7 @@ const DEFAULT_HP_COLORS = { ok: "#4cc46a", injured: "#f0a030", down: "#d03a3a" }
 const DEFAULT_SEGMENT_COLORS = { on: "#ff7a1a", on2: "#ffd27a", off: "#120d0c", border: "#eadfc6" };
 
 const DETAIL_SETTINGS = {
-  unionShowStats: "Party: mostra difesa, velocità, incubo, corruzione e guarigione",
+  unionShowStats: "Party: mostra difesa, velocità, incubo, corallo bianco e rateo di cura",
   unionShowEffects: "Card estesa: mostra gli effetti attivi",
   unionShowCounters: "Card estesa: mostra i contatori del tracker",
   unionShowTags: "Party: mostra i tag degli effetti temporanei (Atk, Def...)"
@@ -271,12 +272,20 @@ function canEditHp(actor) {
 function changeDamage(actor, delta, row) {
   const { value, max } = actor.system.characteristics.health;
   const base = row?.dataset.dmg !== undefined ? Number(row.dataset.dmg) : value;
-  const damage = Math.min(max, Math.max(0, base + delta));
-  if (damage === base) return;
+  const baseTemp = row?.dataset.temp !== undefined ? Number(row.dataset.temp) : tempHp(actor);
+  let damage = Math.min(max, Math.max(0, base + delta));
+  let temp = baseTemp;
+  // New damage eats the temporary HP first; healing leaves them alone.
+  if (damage > base && temp) {
+    const absorbed = Math.min(temp, damage - base);
+    temp -= absorbed;
+    damage -= absorbed;
+  }
+  if (damage === base && temp === baseTemp) return;
   // The new value goes on every card of this PG at once (stack, tracker, personal card), not only the one clicked.
-  for (const card of rowsOf(actor.id)) paintHp(card, damage, max);
-  if (row && !row.isConnected) paintHp(row, damage, max);
-  writeDamage(actor, damage);
+  for (const card of rowsOf(actor.id)) paintHp(card, damage, max, temp);
+  if (row && !row.isConnected) paintHp(row, damage, max, temp);
+  writeDamage(actor, damage, temp);
 }
 
 /** Every card of an actor, wherever it is shown: the floating stack and each card host. */
@@ -307,10 +316,11 @@ async function settle(actor) {
 }
 
 /** Writes the actor's damage: one write per burst of clicks, one at a time, each after the system's reactions settled. */
-export function writeDamage(actor, damage) {
-  const queue = damageQueues.get(actor.id) ?? { target: damage, timer: null, running: Promise.resolve(), clicks: 0, busy: false };
+export function writeDamage(actor, damage, temp = tempHp(actor)) {
+  const queue = damageQueues.get(actor.id) ?? { target: damage, temp, timer: null, running: Promise.resolve(), clicks: 0, busy: false };
   damageQueues.set(actor.id, queue);
   queue.target = damage;
+  queue.temp = temp;
   queue.clicks++;
   // While a write is pending or on its way, the bar shows what was clicked: an answer from the server for an earlier
   // click must not put an older value back (updateHp skips a busy actor). It is redrawn from the real data at the end.
@@ -321,8 +331,13 @@ export function writeDamage(actor, damage) {
       const value = queue.target;
       const seen = queue.clicks;
       try {
-        if (Number(actor.system.characteristics.health.value) !== value) {
-          await actor.update({ "system.characteristics.health.value": value });
+        const temp = queue.temp;
+        if (Number(actor.system.characteristics.health.value) !== value || tempHp(actor) !== temp) {
+          // The temporary HP are already taken off here, so the actor hook must not take them off a second time.
+          await actor.update({
+            "system.characteristics.health.value": value,
+            ...(temp ? { [`flags.${MODULE_ID}.tempHp`]: temp } : { [`flags.${MODULE_ID}.-=tempHp`]: null })
+          }, { csTempHandled: true });
         }
       } finally {
         // Nobody clicked while it was written: what the actor says is now the truth, so show it.
@@ -639,6 +654,7 @@ function cardsMarkup(skin, party, extras = false) {
     return `
     <div class="cu-row" data-actor-id="${actor.id}">
       <img class="cu-portrait" src="${actor.img}" draggable="false">
+      <div class="cu-status"></div>
       <div class="cu-main">
       ${skin.showName === false && !showStats ? "" : `<div class="cu-head">
         ${skin.showName === false ? "" : `<div class="cu-name" title="${Handlebars.Utils.escapeExpression(actor.name)}">${Handlebars.Utils.escapeExpression(showStats ? shortName(actor) : actor.name)}</div>`}
@@ -647,13 +663,14 @@ function cardsMarkup(skin, party, extras = false) {
       <div class="cu-hp">
         <div class="cu-hp-bar">
           <div class="cu-hp-fill"></div>
+          <div class="cu-hp-shield"></div>
           <div class="cu-hp-text"></div>
           ${canEditHp(actor) && !skin.portraitControls ? `<div class="cu-hp-controls">
             <button type="button" data-hp="1" title="Danno (Maiusc: 5)">−</button>
             <button type="button" data-hp="-1" title="Cura (Maiusc: 5)">+</button>
           </div>` : ""}
         </div>
-        ${showStats ? `<span class="cu-hr" data-tooltip="Tasso di guarigione"></span><span class="cu-casts" hidden></span><span class="cu-signature" hidden></span><span class="cu-spec" hidden></span>` : ""}
+        ${showStats ? `<span class="cu-hr" data-tooltip="Rateo di Cura"></span><span class="cu-casts" hidden></span><span class="cu-signature" hidden></span><span class="cu-spec" hidden></span>` : ""}
       </div>
       <div class="cu-line">
         ${skin.segments?.icon ? `<img class="cu-union-icon" src="${skin.segments.icon}" title="Punti unione" draggable="false">` : ""}
@@ -969,6 +986,7 @@ function updateRows(el, skin, party, only = null) {
     updateHp(row, actor);
     updateStats(row, actor);
     updateExtras(row, actor);
+    updateStatus(row, actor);
     updateTags(row, actor);
 
     paintPoints(row, skin, value, max);
@@ -1025,16 +1043,30 @@ function hpColor(bar, pct) {
 }
 
 /** Draws the bar for a given damage; also what the next click counts from (see changeDamage). */
-function paintHp(row, damage, max) {
+function paintHp(row, damage, max, temp = tempHp(game.actors.get(row.dataset.actorId))) {
   row.dataset.dmg = damage;
+  row.dataset.temp = temp;
   const left = Math.max(0, max - damage);
   const bar = row.querySelector(".cu-hp");
-  bar.querySelector(".cu-hp-fill").style.width = max ? `${(left / max) * 100}%` : "0";
+  // Temporary HP / shield: a bluish segment after the HP; the bar widens its scale when HP + shield pass the maximum.
+  const scale = Math.max(max, left + temp);
+  bar.querySelector(".cu-hp-fill").style.width = scale ? `${(left / scale) * 100}%` : "0";
+  const shield = bar.querySelector(".cu-hp-shield");
+  if (shield) {
+    shield.style.left = scale ? `${(left / scale) * 100}%` : "0";
+    shield.style.width = scale ? `${(temp / scale) * 100}%` : "0";
+  }
   bar.style.setProperty("--cu-hp-color", hpColor(bar, max ? left / max : 0));
   // Only the current value on screen; the maximum stays in the tooltip.
   const text = bar.querySelector(".cu-hp-text");
-  text.textContent = `HP ${left}`;
-  bar.dataset.tooltip = `${left} / ${max}` + (bar.querySelector(".cu-hp-bar.adjustable") ? " — clic sinistro: +1, destro: −1 (Maiusc: 5)" : "");
+  text.textContent = `PV ${left}`;
+  if (temp) {
+    const extra = document.createElement("span");
+    extra.className = "cu-hp-temp";
+    extra.textContent = `+${temp}`;
+    text.append(extra);
+  }
+  bar.dataset.tooltip = `${left} / ${max}` + (temp ? ` (+${temp} ${game.i18n.localize("CLUSTERSOMNIA.TempHpFull")})` : "") + (bar.querySelector(".cu-hp-bar.adjustable") ? " — clic sinistro: +1, destro: −1 (Maiusc: 5)" : "");
   bar.classList.toggle("injured", max > 0 && damage >= max / 2);
   bar.classList.toggle("down", left === 0);
 }
@@ -1116,12 +1148,12 @@ function updateStats(row, actor) {
   if (!container) return;
   const { defense, speed, health, insanity, corruption } = actor.system.characteristics;
   // Short text labels as in the party sketch: what the table asks for most during a fight.
-  // Insanity (called Incubo) and corruption show only the current value; the maximum is in the tooltip.
+  // Insanity (called Incubo) and corruption (called Corallo Bianco, "CB") show only the current value; the maximum is in the tooltip.
   const stats = [
     { label: "DEF", title: "Difesa", text: defense },
     { label: "SPD", title: "Velocità", text: speed },
     { label: "INC", title: `Incubo ${insanity.value} / ${insanity.max}`, text: insanity.value },
-    { label: "COR", title: "Corruzione", text: corruption.value }
+    { label: "CB", title: "Corallo Bianco", text: corruption.value }
   ];
   const hr = row.querySelector(".cu-hr");
   if (hr) syncChildren(hr, [statLabel("HR"), String(health.healingrate)]);
@@ -1189,6 +1221,42 @@ function counterInitials(name = "") {
   const words = name.trim().split(/\s+/).filter(Boolean);
   const letters = words.length > 1 ? words[0][0] + words[1][0] : (words[0] ?? "?").slice(0, 2);
   return letters.toUpperCase();
+}
+
+/**
+ * The status icons of a token (Injured, Prone, anything temporary on the actor) drawn around the portrait the way
+ * the token shows them over its picture: small round icons along the left edge, from the top down. More than fit
+ * end in a "+N". The effects picked in the Tracker are not here, they stay in the extras line.
+ */
+const MAX_STATUS_ICONS = 6;
+const STATUS_ARC = { start: 235, step: -28 }; // degrees: 0 is the right, 90 the bottom; so from the top left, down the left side
+
+function updateStatus(row, actor) {
+  const container = row.querySelector(".cu-status");
+  if (!container) return;
+  const children = [];
+  if (game.settings.get(MODULE_ID, "unionShowEffects")) {
+    const effects = tokenEffects(actor);
+    const shown = effects.length > MAX_STATUS_ICONS ? MAX_STATUS_ICONS - 1 : effects.length;
+    effects.slice(0, shown).forEach((effect, index) => {
+      const icon = document.createElement("img");
+      icon.className = "cu-status-icon";
+      icon.src = effect.img;
+      icon.draggable = false;
+      icon.dataset.tooltip = effect.name;
+      icon.style.setProperty("--a", `${STATUS_ARC.start + STATUS_ARC.step * index}deg`);
+      children.push(icon);
+    });
+    if (effects.length > shown) {
+      const more = document.createElement("span");
+      more.className = "cu-status-icon cu-status-more";
+      more.textContent = `+${effects.length - shown}`;
+      more.dataset.tooltip = effects.slice(shown).map(effect => effect.name).join(", ");
+      more.style.setProperty("--a", `${STATUS_ARC.start + STATUS_ARC.step * shown}deg`);
+      children.push(more);
+    }
+  }
+  syncChildren(container, children);
 }
 
 function updateExtras(row, actor) {

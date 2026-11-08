@@ -410,16 +410,25 @@
 
 .cs-damage-by-size .cs-rule-label {
   flex: 1;
+  text-align: center;
 }
 
-.cs-damage-by-size .cs-rule-icon {
+/* The sheet gives every icon of these rows a 16px box and a 2px margin (".item-group-damage i"); the selector below
+   outweighs it. */
+.demonlord-v2-sheet .cs-damage-by-size .cs-rule .cs-rule-icon {
   flex: none;
-  margin-right: 4px;
-  font-size: 18px;
+  /* The glyph is wider than that 16px box, so it is sized by itself. It has the "+" icon's size (14px), and its
+     margin puts its centre on the centre of the "+" in the row below: the "+" box is 16px wide with a 2px margin,
+     so its centre is 10px from the edge, and the toggle is 1.125em wide. */
+  width: auto;
+  height: auto;
+  margin-right: calc(10px - 0.5625em);
+  font-size: 14px;
+  line-height: 1;
   opacity: 0.55;
 }
 
-.cs-damage-by-size .cs-rule.on .cs-rule-icon {
+.demonlord-v2-sheet .cs-damage-by-size .cs-rule.on .cs-rule-icon {
   opacity: 1;
   color: #ffd25e;
 }
@@ -432,4 +441,99 @@
 
 .cs-damage-by-size .cs-rule:focus-visible {
   box-shadow: 0 0 0 1px currentColor;
+}
+
+/* Temporary HP row in the Tracker, and the box on actor sheets. */
+.sotdl-tracker-temp {
+  margin-top: 6px;
+}
+
+.demonlord form aside .sidebar .chars .cs-temphp .speed input {
+  color: #5ec8f5;
+}
+
+/* The box on the sheet: no frame of its own inside the system's oval, like the Fabula value beside it. */
+.demonlord form aside .sidebar .chars .cs-temphp .speed input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+  font: inherit;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.demonlord form aside .sidebar .chars .cs-temphp .speed input::-webkit-inner-spin-button,
+.demonlord form aside .sidebar .chars .cs-temphp .speed input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* Actor sheets: each tab scrolls inside its own pane, and its last rows ended against the sheet's bottom edge (under the
+   resize handle). The extra padding at the end lets them scroll clear of it. The Effects tab holds sub-panes that scroll
+   on their own, so the padding goes on those and not on the outer pane (which would then scroll twice). */
+.demonlord .sheet-body .sheet-content > .tab:not([data-tab="effects"]),
+.demonlord .sheet-body .tab.effects .tab {
+  padding-bottom: 44px;
+}
+
+/* The eye button in the weapons header of the Genesis actor's sheet: it filters the unarmed attacks by form. */
+.cs-form-toggle {
+  margin-right: 8px;
+  cursor: pointer;
+  opacity: 0.55;
+}
+
+.cs-form-toggle.cs-active {
+  opacity: 1;
+  color: #ffd25e;
+}
+
+.cs-form-toggle:hover {
+  opacity: 1;
+}
+
+/* Chat cards: the action boxes (apply damage / double / half, apply healing, attack damage lines, challenge and talent
+   buttons). The system gives each box a fixed 27px height and floats its icon and its text (the box itself, ".header",
+   and the divs inside), so a text that wraps, which the Italian ones do often, drops under the icon and spills over the
+   next box. Here the box grows with its text and the icon sits beside it, centred on the first line. */
+:is(.demonlord, .creature, .vehicle) :is(.talentactions, .combatactions, .damageaction, .challengeaction) {
+  height: auto;
+  min-height: 27px;
+}
+
+:is(.demonlord, .creature, .vehicle) :is(.talentactions, .combatactions, .damageaction, .challengeaction) > .header {
+  /* The system floats this box too (".damageaction div"), and a floated child does not make its parent grow. */
+  float: none;
+  padding-left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:is(.demonlord, .creature, .vehicle) :is(.talentactions, .combatactions, .damageaction, .challengeaction) > .header > * {
+  float: none;
+  padding-left: 0;
+}
+
+:is(.demonlord, .creature, .vehicle) :is(.talentactions, .combatactions, .damageaction, .challengeaction) > .header > :is(img, .blood, .challenge-img, .init-img, .talent-img) {
+  flex: none;
+}
+
+:is(.demonlord, .creature, .vehicle) :is(.talentactions, .combatactions, .damageaction, .challengeaction) > .header > .blood {
+  margin: 0 0 0 -3px;
+}
+
+/* "Danno dimezzato corrisponde a: N", under the damage roll of the Gigantomachia attacks that are halved. */
+.cs-half {
+  margin: 6px 0 2px;
+  padding: 5px 8px;
+  background: #bbb;
+  border: 1px solid #666;
+  border-radius: 3px;
+  font-size: 12px;
 }

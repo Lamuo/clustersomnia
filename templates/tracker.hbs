@@ -1,10 +1,19 @@
 <div class="sotdl-tracker">
   <section class="sotdl-tracker-hp">
-    <label>HP</label>
+    <label>PV</label>
     <div class="sotdl-tracker-hp-controls">
       <button type="button" data-action="hpDelta" data-delta="-1">−1</button>
       <span class="sotdl-tracker-hp-value">{{health.value}} / {{health.max}}</span>
       <button type="button" data-action="hpDelta" data-delta="1">+1</button>
+    </div>
+  </section>
+
+  <section class="sotdl-tracker-hp sotdl-tracker-temp">
+    <label title="{{localize "CLUSTERSOMNIA.TempHpFull"}}">{{localize "CLUSTERSOMNIA.TempHp"}}</label>
+    <div class="sotdl-tracker-hp-controls">
+      <button type="button" data-action="tempDelta" data-delta="-1">−1</button>
+      <span class="sotdl-tracker-hp-value">{{tempHp}}</span>
+      <button type="button" data-action="tempDelta" data-delta="1">+1</button>
     </div>
   </section>
 

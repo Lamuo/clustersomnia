@@ -28,3 +28,11 @@ export function displayedEffects(actor) {
   const displayed = new Set(persistenceActor(actor).getFlag(FLAG_NAMESPACE, "displayedEffectIds") ?? []);
   return Array.from(actor.allApplicableEffects()).filter(effect => displayed.has(effectKey(effect)) || displayed.has(effect.uuid));
 }
+
+/**
+ * The effects a token shows as little icons over it: the temporary ones, with a duration or a status (Injured,
+ * Prone...). They come and go with the token's own icons, so the cards can follow them.
+ */
+export function tokenEffects(actor) {
+  return [...(actor.temporaryEffects ?? [])].filter(effect => !effect.disabled);
+}

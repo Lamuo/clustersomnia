@@ -1,0 +1,161 @@
+<div class="sotdl-genesis-config">
+  <header class="gc-base">
+    <label class="gc-field gc-wide">
+      <span>Personaggio</span>
+      <select name="actorId" {{#unless isGM}}disabled title="Lo sceglie il GM"{{/unless}}>
+        {{#each actors as |actor|}}
+        <option value="{{actor.id}}" {{#if actor.selected}}selected{{/if}}>{{actor.name}}</option>
+        {{/each}}
+      </select>
+    </label>
+    <nav class="gc-tabs" role="tablist">
+      <button type="button" class="gc-tab active" role="tab" data-action="showPane" data-pane="elements">Elementi Genesis</button>
+      <button type="button" class="gc-tab" role="tab" data-action="showPane" data-pane="giganto">Gigantomachia</button>
+      <button type="button" class="gc-tab" role="tab" data-action="showPane" data-pane="styles">Stili del Pugno</button>
+    </nav>
+  </header>
+
+  <section class="gc-pane active" data-pane="elements">
+    <div class="gc-pane-base">
+      <label class="gc-field">
+        <span>Effetto che attiva Genesis</span>
+        <input type="text" name="effectName" value="{{effectName}}" placeholder="Genesis">
+      </label>
+      <label class="gc-field">
+        <span>Icona dell'attacco</span>
+        <select name="iconMode">
+          {{#each iconModes as |mode|}}
+          <option value="{{mode.id}}" {{#if mode.selected}}selected{{/if}}>{{mode.label}}</option>
+          {{/each}}
+        </select>
+      </label>
+      <p>Con quell'effetto attivo, ogni attacco del personaggio chiede quale elemento usare. L'elemento cambia nome, icona, descrizione e tipo di danno dell'attacco, solo nella card in chat. Il nome dell'effetto conta all'inizio: «Genesis» vale anche per «Genesis - Alsa». In «Nome dell'attacco», {nome} è il nome dell'attacco (o dello stile scelto).</p>
+    </div>
+
+    <div class="gc-list">
+      {{#each elements as |element|}}
+      <article class="gc-el" data-id="{{element.id}}" style="--el: {{element.color}}">
+        <div class="gc-pic">
+          <button type="button" class="gc-icon" data-action="pickIcon" title="Scegli l'icona"><img src="{{element.icon}}" alt=""></button>
+          <button type="button" class="gc-small" data-action="resetIcon" title="Icona predefinita"><i class="fas fa-rotate-left"></i></button>
+        </div>
+        <div class="gc-fields">
+          <label class="gc-field">
+            <span>Nome dell'elemento</span>
+            <input type="text" name="label" value="{{element.label}}">
+          </label>
+          <label class="gc-field">
+            <span>Nome dell'attacco</span>
+            <input type="text" name="name" value="{{element.name}}" placeholder="{nome}">
+          </label>
+          <label class="gc-field">
+            <span>Elemento (tipo di danno)</span>
+            <input type="text" name="damageType" value="{{element.damageType}}">
+          </label>
+          <label class="gc-field gc-wide">
+            <span>Descrizione</span>
+            <textarea name="description" rows="3">{{element.description}}</textarea>
+          </label>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </section>
+
+  <section class="gc-pane" data-pane="giganto">
+    <div class="gc-pane-base">
+      <label class="gc-field gc-wide">
+        <span>Effetto che attiva Gigantomachia</span>
+        <input type="text" name="gigantoEffect" value="{{gigantoEffect}}" placeholder="Gigantomachia">
+      </label>
+      <p>Con quell'effetto attivo, ogni attacco del personaggio chiede anche quale opzione di Gigantomachia usare. Si può scegliere anche un elemento di Genesis: l'opzione resta l'icona grande, e l'arma e l'elemento diventano due piccole icone negli angoli; nomi e descrizioni si sommano e il tipo di danno è quello dell'elemento. Grumi, Raggio e Spuntoni cambiano le statistiche dell'attacco: sulla card le righe del danno diventano metà del danno dell'arma (per difetto) + 3 per ogni grumo, il danno dell'arma e 1d6+3 per gli altri bersagli, oppure metà del danno dell'arma e 1d6 extra con un tiro di Agilità. Hanno nome, icona e descrizione propri. «Sangue» è l'attacco normale con il sangue: come un elemento di Genesis, la sua icona ha l'arma piccola nell'angolo e {nome} è il nome dell'attacco.</p>
+    </div>
+
+    <div class="gc-list">
+      {{#each gigantomachia as |option|}}
+      <article class="gc-gi" data-id="{{option.id}}" style="--el: {{option.color}}">
+        <div class="gc-pic">
+          <button type="button" class="gc-icon" data-action="pickIcon" title="Scegli l'icona"><img src="{{option.icon}}" alt=""></button>
+          <button type="button" class="gc-small" data-action="resetIcon" title="Icona predefinita"><i class="fas fa-rotate-left"></i></button>
+        </div>
+        <div class="gc-fields">
+          <label class="gc-field">
+            <span>Nome nel popup</span>
+            <input type="text" name="label" value="{{option.label}}">
+          </label>
+          <label class="gc-field">
+            <span>Nome dell'attacco</span>
+            <input type="text" name="name" value="{{option.name}}" placeholder="{nome}">
+          </label>
+          <label class="gc-field gc-wide">
+            <span>Descrizione</span>
+            <textarea name="description" rows="4">{{option.description}}</textarea>
+          </label>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </section>
+
+  <section class="gc-pane" data-pane="styles">
+    <div class="gc-pane-base">
+      <label class="gc-field">
+        <span>Arma a mani nude</span>
+        <input type="text" name="styleWeapon" value="{{styleWeapon}}" placeholder="Pugno">
+      </label>
+      <label class="gc-field">
+        <span>Forma umana: non compaiono con questi effetti attivi</span>
+        <input type="text" name="styleBlock" value="{{styleBlock}}" placeholder="Forma Gatto, Forma Ibrida">
+      </label>
+      <label class="gc-field">
+        <span>Arma in forma Gatto</span>
+        <input type="text" name="styleCatWeapon" value="{{styleCatWeapon}}" placeholder="Artigli (Gatto)">
+      </label>
+      <label class="gc-field">
+        <span>Effetto della forma Gatto</span>
+        <input type="text" name="styleCatEffect" value="{{styleCatEffect}}" placeholder="Forma Gatto">
+      </label>
+      <label class="gc-field">
+        <span>Arma in forma Ibrida</span>
+        <input type="text" name="styleHybridWeapon" value="{{styleHybridWeapon}}" placeholder="Artigli (Ibrido)">
+      </label>
+      <label class="gc-field">
+        <span>Effetto della forma Ibrida</span>
+        <input type="text" name="styleHybridEffect" value="{{styleHybridEffect}}" placeholder="Forma Ibrida">
+      </label>
+      <p>Gli stili compaiono nel popup dell'arma indicata, anche senza Genesis. In forma umana sull'arma a mani nude; in forma Gatto e Ibrida sull'arma della forma, con Artigli (che lascia nome e icona dell'arma) e Morso per primi. Sono solo racconto: cambiano nome, icona e descrizione nella card, mai il danno o le altre caratteristiche. Lascia vuota l'icona o la descrizione per tenere quelle dell'arma. Più effetti si separano con una virgola.</p>
+    </div>
+
+    <div class="gc-list">
+      {{#each styles as |style|}}
+      <article class="gc-st" data-id="{{style.id}}" style="--el: #8a8478">
+        <div class="gc-pic">
+          <button type="button" class="gc-icon" data-action="pickIcon" title="Scegli l'icona (vuota: quella dell'arma)"><img src="{{style.shownIcon}}" alt=""></button>
+          <button type="button" class="gc-small" data-action="resetIcon" title="Icona predefinita"><i class="fas fa-rotate-left"></i></button>
+        </div>
+        <div class="gc-fields">
+          <label class="gc-field">
+            <span>Nome nel popup</span>
+            <input type="text" name="label" value="{{style.label}}">
+          </label>
+          <label class="gc-field">
+            <span>Nome dell'attacco</span>
+            <input type="text" name="name" value="{{style.name}}" placeholder="nome dell'arma">
+          </label>
+          <label class="gc-field gc-wide">
+            <span>Descrizione</span>
+            <textarea name="description" rows="2" placeholder="vuota: quella dell'arma">{{style.description}}</textarea>
+          </label>
+        </div>
+      </article>
+      {{/each}}
+    </div>
+  </section>
+
+  <footer class="gc-footer">
+    <button type="button" data-action="resetAll"><i class="fas fa-rotate-left"></i> Ripristina predefiniti</button>
+    <span class="gc-spacer"></span>
+    <button type="button" data-action="cancel">Annulla</button>
+    <button type="button" class="gc-save" data-action="save"><i class="fas fa-check"></i> Salva</button>
+  </footer>
+</div>

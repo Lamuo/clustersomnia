@@ -1,4 +1,5 @@
 import { EffectsConfigApp } from "./effects-config-app.js";
+import { tempHp, setTempHp } from "./temp-hp.js";
 import { persistenceActor, displayedEffects } from "./persistence.js";
 import { TAG_CATEGORIES, MAX_STEPS, automaticTags, levelOf, manualTags } from "./tags.js";
 
@@ -36,6 +37,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
     },
     actions: {
       hpDelta: TrackerApp.#onHpDelta,
+      tempDelta: TrackerApp.#onTempDelta,
       counterAdd: TrackerApp.#onCounterAdd,
       counterDelta: TrackerApp.#onCounterDelta,
       counterRemove: TrackerApp.#onCounterRemove,
@@ -93,6 +95,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return {
       actor: this.actor,
       health: this.actor.system.characteristics.health,
+      tempHp: tempHp(this.actor),
       counters: this.counters,
       effects: this.effects,
       tags: this.tagContext,
@@ -177,6 +180,10 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const health = this.actor.system.characteristics.health;
     const value = Math.min(health.max, Math.max(0, health.value + delta));
     this.actor.update({ "system.characteristics.health.value": value });
+  }
+
+  static #onTempDelta(_event, target) {
+    setTempHp(this.actor, tempHp(this.actor) + Number(target.dataset.delta));
   }
 
   static #onCounterAdd(_event, _target) {

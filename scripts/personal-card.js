@@ -13,6 +13,8 @@ function mine(party) {
   if (game.user.isGM) {
     const selected = canvas.tokens?.controlled.map(token => token.actor).find(a => party.some(p => p.id === (a?.baseActor?.id ?? a?.id)));
     if (selected) gmActorId = selected.baseActor?.id ?? selected.id;
+    // Until a party token is selected, show Lady Diane.
+    gmActorId ??= party.find(a => /diane/i.test(a.name))?.id ?? null;
     actor = game.actors.get(gmActorId);
   }
   return actor && party.includes(actor) ? [actor] : [];

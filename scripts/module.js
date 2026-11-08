@@ -9,6 +9,10 @@ import "./sheet-popout.js";
 import "./party-toggle.js";
 import "./weapon-size-damage.js";
 import "./health-guard.js";
+import "./roll-dialog.js";
+import "./temp-hp.js";
+import "./alsa.js";
+import "./alsa-weapons.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
 const LEGACY_FLAG_NAMESPACE = "my-tracker";
