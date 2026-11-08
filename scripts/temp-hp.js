@@ -1,28 +1,34 @@
 // Temporary hit points / shield, for every actor. The system's data model has no field for it (and drops unknown
 // keys), so the value lives in the actor flag clustersomnia.tempHp. It is shown on the actor sheet, on the party
-// cards (union-meter.js), in the Tracker and on token bars. It is only a number the table edits: damage does not
-// consume it by itself.
+// cards (union-meter.js), in the Tracker and on token bars (token-bar.js). The table edits the number; damage taken
+// eats it first (the preUpdateActor hook below), whoever writes the damage.
+
+import { realActor } from "./persistence.js";
 
 const MODULE_ID = "clustersomnia";
 const FLAG = "tempHp";
-const SHIELD_COLOR = 0x5ec8f5;
 
-/** Current temporary HP of an actor (0 when none). Unlinked tokens keep their own value on the token's actor. */
+/** The actor that holds the temporary HP: the real one (see realActor), so every view of a PG shows the same shield. */
+const shieldActor = realActor;
+
+/** Current temporary HP of an actor (0 when none). */
 export function tempHp(actor) {
-  const value = Number(actor?.getFlag(MODULE_ID, FLAG));
+  const value = Number(shieldActor(actor)?.getFlag(MODULE_ID, FLAG));
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
 
 export function setTempHp(actor, value) {
+  const holder = shieldActor(actor);
   const next = Math.max(0, Math.floor(Number(value)) || 0);
-  return next ? actor.setFlag(MODULE_ID, FLAG, next) : actor.unsetFlag(MODULE_ID, FLAG);
+  return next ? holder.setFlag(MODULE_ID, FLAG, next) : holder.unsetFlag(MODULE_ID, FLAG);
 }
 
 /* ------------------------------- Damage ------------------------------- */
 
 // Damage that raises health.value (the damage taken) is taken off the temporary HP first, whoever writes it: the
 // party cards, the Tracker, the sheet, the chat buttons. Healing lowers health.value and leaves the shield alone.
-// The party cards take it off themselves (to draw it at once) and say so with options.csTempHandled.
+// An update that says options.csTempHandled has already dealt with the shield (or must leave it alone) and is skipped.
+// The party cards only draw the shield at once; what they write is the click, and this hook does the taking off.
 const HEALTH_PATH = "system.characteristics.health.value";
 
 Hooks.on("preUpdateActor", (actor, changes, options) => {
@@ -38,6 +44,12 @@ Hooks.on("preUpdateActor", (actor, changes, options) => {
   if (flat) changes[HEALTH_PATH] = Number(next) - absorbed;
   else foundry.utils.setProperty(changes, HEALTH_PATH, Number(next) - absorbed);
   const left = temp - absorbed;
+  // The shield of a PG lives on its world actor: when the damage lands on a token's own copy, the shield is written
+  // there (a second update) and not in the token's data.
+  if (shieldActor(actor) !== actor) {
+    setTempHp(actor, left);
+    return;
+  }
   if (left) foundry.utils.setProperty(changes, `flags.${MODULE_ID}.${FLAG}`, left);
   else foundry.utils.setProperty(changes, `flags.${MODULE_ID}.-=${FLAG}`, null);
 });
@@ -80,87 +92,4 @@ Hooks.on("renderActorSheet", (app, html) => {
     event.stopPropagation();
     setTempHp(actor, input.value);
   });
-});
-
-/* ------------------------------- Token bar ------------------------------- */
-
-/** The system's own bar grows with damage, so the shield sits at the other end: the part that still stands. */
-function drawShield(token, bar, data) {
-  const temp = tempHp(token.actor);
-  if (!temp || !data?.max) return;
-  const w = token.w;
-  let h = Math.max(canvas.dimensions.size / 12, 8);
-  if (token.document.height >= 2) h *= 1.6;
-  const stroke = Math.clamp(h / 8, 1, 2);
-  const width = Math.min(1, temp / data.max) * w;
-  bar
-    .beginFill(SHIELD_COLOR, 0.95)
-    .lineStyle(stroke, token.blk, 1.0)
-    .drawRoundedRect(w - width, 0, width, h, 2)
-    .endFill();
-  drawHoneycomb(bar, w - width, w, h);
-}
-
-/**
- * Honeycomb outlines over the shield: pointy-top hexagons that run on past the top and bottom edges. Each edge is
- * cut at the rectangle (Liang-Barsky), so a hexagon half outside is drawn half, not squashed.
- */
-function drawHoneycomb(bar, x0, x1, h) {
-  const r = Math.max(2.5, h * 0.3);
-  const dx = Math.sqrt(3) * r;
-  const dy = 1.5 * r;
-  bar.lineStyle(1, 0xffffff, 0.6);
-  // Rows are centred on the bar so the pattern is the same above and below the middle.
-  const rows = Math.ceil(h / dy) + 2;
-  for (let row = -rows; row <= rows; row++) {
-    const cy = h / 2 + row * dy;
-    for (let cx = x0 + (row % 2 ? dx / 2 : 0) - dx; cx - dx < x1; cx += dx) {
-      const corners = [0, 1, 2, 3, 4, 5].map(k => {
-        const angle = Math.PI / 6 + (Math.PI / 3) * k;
-        return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
-      });
-      for (let k = 0; k < 6; k++) {
-        const segment = clipSegment(corners[k], corners[(k + 1) % 6], x0, 0, x1, h);
-        if (segment) bar.moveTo(segment[0], segment[1]).lineTo(segment[2], segment[3]);
-      }
-    }
-  }
-}
-
-/** The part of segment a-b inside the rectangle, or null. */
-function clipSegment([ax, ay], [bx, by], left, top, right, bottom) {
-  let t0 = 0;
-  let t1 = 1;
-  const dx = bx - ax;
-  const dy = by - ay;
-  for (const [p, q] of [[-dx, ax - left], [dx, right - ax], [-dy, ay - top], [dy, bottom - ay]]) {
-    if (p === 0) {
-      if (q < 0) return null;
-    } else {
-      const t = q / p;
-      if (p < 0) t0 = Math.max(t0, t);
-      else t1 = Math.min(t1, t);
-    }
-  }
-  if (t0 > t1) return null;
-  return [ax + t0 * dx, ay + t0 * dy, ax + t1 * dx, ay + t1 * dy];
-}
-
-Hooks.once("ready", () => {
-  const proto = CONFIG.Token.objectClass?.prototype;
-  const original = proto?._drawDamageBar;
-  if (typeof original !== "function") {
-    console.warn(`${MODULE_ID} | The system no longer has Token#_drawDamageBar: temporary HP are not drawn on token bars.`);
-    return;
-  }
-  proto._drawDamageBar = function (number, bar, data) {
-    const result = original.call(this, number, bar, data);
-    drawShield(this, bar, data);
-    return result;
-  };
-});
-
-Hooks.on("updateActor", (actor, changes) => {
-  if (!foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.${FLAG}`) && !foundry.utils.hasProperty(changes, `flags.${MODULE_ID}.-=${FLAG}`)) return;
-  for (const token of actor.getActiveTokens()) token.renderFlags.set({ refreshBars: true });
 });

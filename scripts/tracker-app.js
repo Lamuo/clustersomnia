@@ -1,6 +1,6 @@
 import { EffectsConfigApp } from "./effects-config-app.js";
 import { tempHp, setTempHp } from "./temp-hp.js";
-import { persistenceActor, displayedEffects } from "./persistence.js";
+import { persistenceActor, displayedEffects, realActor } from "./persistence.js";
 import { TAG_CATEGORIES, MAX_STEPS, automaticTags, levelOf, manualTags } from "./tags.js";
 
 // What a tag button or a "from effects" item shows: arrows by direction and the colour tier of its steps.
@@ -94,7 +94,8 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   async _prepareContext(_options) {
     return {
       actor: this.actor,
-      health: this.actor.system.characteristics.health,
+      // The real hit points: those of the world actor for a PG, the same ones the sheet and the party cards show.
+      health: realActor(this.actor).system.characteristics.health,
       tempHp: tempHp(this.actor),
       counters: this.counters,
       effects: this.effects,
@@ -177,9 +178,10 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static #onHpDelta(_event, target) {
     const delta = Number(target.dataset.delta);
-    const health = this.actor.system.characteristics.health;
+    const actor = realActor(this.actor);
+    const health = actor.system.characteristics.health;
     const value = Math.min(health.max, Math.max(0, health.value + delta));
-    this.actor.update({ "system.characteristics.health.value": value });
+    actor.update({ "system.characteristics.health.value": value });
   }
 
   static #onTempDelta(_event, target) {

@@ -1338,3 +1338,22 @@
   line-height: 1;
   color: #fff;
 }
+
+/* The blood over the portrait of a hurt PG, the same picture the actor sheet puts over its portrait when the PG is injured
+   (damage of half the hit points or more: the class the HP bar already carries). It sits on the portrait, under the status icons. */
+.cu-host .cu-injured {
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: calc(var(--cu-icon) * var(--cu-s));
+  height: calc(var(--cu-icon) * var(--cu-s));
+  translate: 0 calc(-50% + var(--cu-shift) * var(--cu-s));
+  display: none;
+  border-radius: 50%;
+  background: url("/systems/demonlord/assets/ui/injured-overlay.webp") center / cover no-repeat;
+  pointer-events: none;
+}
+
+.cu-host .cu-row:has(.cu-hp.injured) .cu-injured {
+  display: block;
+}

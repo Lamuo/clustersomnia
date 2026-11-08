@@ -21,18 +21,20 @@ export const MAX_STEPS = ARROWS_PER_TIER * (MAX_TIER + 1) + 1;
 // One tag per category and direction, whatever the number of effects behind it. First match wins, and the
 // order of this list is the order tags are shown in.
 export const TAG_CATEGORIES = [
-  // Attack bonuses split in two: spells go to Mag, everything else to Atk / Hit / Crit.
-  { id: "atk", label: "Atk", name: "Attacco", keys: /^system\.bonuses\.attack\.(damage\.(?!spell)|extraEffect)/ },
+  // Attack bonuses split in two: spells go to Mag, everything else to Atk / Hit / Crit. "damage" with nothing after it
+  // is a plain bonus to the damage of any attack (many talents use it), so it counts for Atk like "damage.all" does.
+  { id: "atk", label: "Atk", name: "Attacco", keys: /^system\.bonuses\.attack\.(damage($|\.(?!spell))|extraEffect)/ },
   { id: "mag", label: "Mag", name: "Magia", keys: /^system\.bonuses\.attack\.(damage|boons)\.spell/ },
   { id: "hit", label: "Hit", name: "Colpire", keys: /^system\.bonuses\.attack\.boons\.(?!spell)/ },
   // A boon to attacks improves both the hit and the critical, so those keys feed Hit and Crit together.
   { id: "crit", label: "Crit", name: "Critico", keys: /^system\.bonuses\.attack\.(plus20Damage|boons\.(?!spell))/ },
   { id: "def", label: "Def", name: "Difesa", keys: /^system\.bonuses\.(armor|defense)\.|^system\.characteristics\.defense/ },
-  { id: "str", label: "Str", name: "Forza", keys: /attributes\.strength|challenge\.boons\.strength/ },
-  { id: "agi", label: "Agi", name: "Agilità", keys: /attributes\.agility|challenge\.boons\.agility/ },
-  { id: "int", label: "Int", name: "Intelletto", keys: /attributes\.intellect|challenge\.boons\.intellect/ },
-  { id: "wil", label: "Wil", name: "Volontà", keys: /attributes\.will|challenge\.boons\.will/ },
-  { id: "per", label: "Per", name: "Percezione", keys: /attributes\.perception|challenge\.boons\.perception/ },
+  // The challenge boons "all" count for each of the five attributes: one such effect adds a step to Str, Agi, Int, Wil and Per.
+  { id: "str", label: "Str", name: "Forza", keys: /attributes\.strength|challenge\.boons\.(strength|all)/ },
+  { id: "agi", label: "Agi", name: "Agilità", keys: /attributes\.agility|challenge\.boons\.(agility|all)/ },
+  { id: "int", label: "Int", name: "Intelletto", keys: /attributes\.intellect|challenge\.boons\.(intellect|all)/ },
+  { id: "wil", label: "Wil", name: "Volontà", keys: /attributes\.will|challenge\.boons\.(will|all)/ },
+  { id: "per", label: "Per", name: "Percezione", keys: /attributes\.perception|challenge\.boons\.(perception|all)/ },
   { id: "spd", label: "Spd", name: "Velocità", keys: /^system\.characteristics\.speed/ },
   { id: "hp", label: "PV", name: "Punti ferita", keys: /^system\.characteristics\.health\.max/ },
   { id: "pow", label: "Pow", name: "Potere", keys: /^system\.characteristics\.power/ },

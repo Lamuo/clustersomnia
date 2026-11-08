@@ -285,7 +285,9 @@ function changeDamage(actor, delta, row) {
   // The new value goes on every card of this PG at once (stack, tracker, personal card), not only the one clicked.
   for (const card of rowsOf(actor.id)) paintHp(card, damage, max, temp);
   if (row && !row.isConnected) paintHp(row, damage, max, temp);
-  writeDamage(actor, damage, temp);
+  // What is written is the click itself (+1 damage, -1 healing...), not the bar's numbers: the shield is taken off by the
+  // actor's own hook from its real value, so a card that remembers an old shield can never overwrite it.
+  writeDamage(actor, delta);
 }
 
 /** Every card of an actor, wherever it is shown: the floating stack and each card host. */
@@ -315,12 +317,15 @@ async function settle(actor) {
   while (Date.now() - (lastActivity.get(actor.id) ?? 0) < 300 && Date.now() - started < 3000) await sleep(100);
 }
 
-/** Writes the actor's damage: one write per burst of clicks, one at a time, each after the system's reactions settled. */
-export function writeDamage(actor, damage, temp = tempHp(actor)) {
-  const queue = damageQueues.get(actor.id) ?? { target: damage, temp, timer: null, running: Promise.resolve(), clicks: 0, busy: false };
+/**
+ * Changes the actor's damage by `delta` (positive hurts, negative heals): one write per burst of clicks, with the
+ * clicks added up, one at a time, each after the system's reactions settled. The damage is worked out from the actor's
+ * real value when the write goes out; damage taken also eats the temporary HP, which the actor's hook does.
+ */
+export function writeDamage(actor, delta) {
+  const queue = damageQueues.get(actor.id) ?? { delta: 0, timer: null, running: Promise.resolve(), clicks: 0, busy: false };
   damageQueues.set(actor.id, queue);
-  queue.target = damage;
-  queue.temp = temp;
+  queue.delta += delta;
   queue.clicks++;
   // While a write is pending or on its way, the bar shows what was clicked: an answer from the server for an earlier
   // click must not put an older value back (updateHp skips a busy actor). It is redrawn from the real data at the end.
@@ -328,17 +333,13 @@ export function writeDamage(actor, damage, temp = tempHp(actor)) {
   clearTimeout(queue.timer);
   queue.timer = setTimeout(() => {
     queue.running = queue.running.then(async () => {
-      const value = queue.target;
+      const pending = queue.delta;
+      queue.delta = 0;
       const seen = queue.clicks;
       try {
-        const temp = queue.temp;
-        if (Number(actor.system.characteristics.health.value) !== value || tempHp(actor) !== temp) {
-          // The temporary HP are already taken off here, so the actor hook must not take them off a second time.
-          await actor.update({
-            "system.characteristics.health.value": value,
-            ...(temp ? { [`flags.${MODULE_ID}.tempHp`]: temp } : { [`flags.${MODULE_ID}.-=tempHp`]: null })
-          }, { csTempHandled: true });
-        }
+        const { value: current, max } = actor.system.characteristics.health;
+        const value = Math.min(max, Math.max(0, Number(current) + pending));
+        if (value !== Number(current)) await actor.update({ "system.characteristics.health.value": value });
       } finally {
         // Nobody clicked while it was written: what the actor says is now the truth, so show it.
         if (queue.clicks === seen) {
@@ -654,6 +655,7 @@ function cardsMarkup(skin, party, extras = false) {
     return `
     <div class="cu-row" data-actor-id="${actor.id}">
       <img class="cu-portrait" src="${actor.img}" draggable="false">
+      <div class="cu-injured"></div>
       <div class="cu-status"></div>
       <div class="cu-main">
       ${skin.showName === false && !showStats ? "" : `<div class="cu-head">

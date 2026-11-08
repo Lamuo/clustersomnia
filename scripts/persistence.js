@@ -7,6 +7,16 @@ export function persistenceActor(actor) {
   return (actor.isToken ? actor.token?.baseActor : actor) ?? actor;
 }
 
+/**
+ * The actor whose numbers are the real ones. A player character has one set of hit points and one shield, on its world
+ * actor, whichever token or sheet shows or edits them: the sheet, the party cards, the Tracker and every token of that
+ * PG must agree (an unlinked token has a copy of the actor that drifts apart the moment it is edited). Any other actor,
+ * such as a monster, keeps the numbers of its own token, so each unlinked token is hurt on its own.
+ */
+export function realActor(actor) {
+  return actor?.type === "character" ? persistenceActor(actor) : actor;
+}
+
 const FLAG_NAMESPACE = "clustersomnia";
 
 /**

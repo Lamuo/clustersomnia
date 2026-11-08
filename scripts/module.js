@@ -11,6 +11,7 @@ import "./weapon-size-damage.js";
 import "./health-guard.js";
 import "./roll-dialog.js";
 import "./temp-hp.js";
+import "./token-bar.js";
 import "./alsa.js";
 import "./alsa-weapons.js";
 
