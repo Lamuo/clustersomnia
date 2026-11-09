@@ -454,8 +454,9 @@
 
 /* The box on the sheet: no frame of its own inside the system's oval, like the Fabula value beside it. */
 .demonlord form aside .sidebar .chars .cs-temphp .speed input {
+  display: block;
   width: 100%;
-  height: 100%;
+  height: auto; /* same box as the Fabula text beside it (the oval pads its content 2px from the top) */
   padding: 0;
   margin: 0;
   border: 0;
