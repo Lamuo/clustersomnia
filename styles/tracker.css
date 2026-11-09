@@ -537,3 +537,9 @@
   border-radius: 3px;
   font-size: 12px;
 }
+
+/* Damage-line icons swapped in by the module are full pictures: the system's -5px margin (made for its own generic icon) pushes them out to the left. */
+.roll-damage .header > img:not([src*="items/damage.webp"]) {
+  margin-left: 0;
+  margin-right: 3px;
+}
