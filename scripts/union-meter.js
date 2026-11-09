@@ -192,6 +192,11 @@ Hooks.once("init", () => {
     hint: "Se spento contano solo le magie, gli effetti temporanei e quelli scelti con Search Effects: niente livelli di percorso, equipaggiamento o talenti di classe.",
     scope: "world", config: true, type: Boolean, default: true, onChange: redraw
   });
+  game.settings.register(MODULE_ID, "trackerShowTags", {
+    name: "Tracker: mostra la sezione Tag",
+    hint: "Pulsanti per aggiungere a mano bonus e penalità ai tag e riga dei tag dagli effetti. Si applica alla prossima apertura del Tracker.",
+    scope: "client", config: true, type: Boolean, default: false
+  });
   game.settings.register(MODULE_ID, "unionShow", {
     name: "Mostra i meter dei punti unione",
     scope: "client", config: true, type: Boolean, default: true, onChange: redraw
@@ -1150,12 +1155,12 @@ function updateStats(row, actor) {
   if (!container) return;
   const { defense, speed, health, insanity, corruption } = actor.system.characteristics;
   // Short text labels as in the party sketch: what the table asks for most during a fight.
-  // Insanity (called Incubo) and corruption (called Corallo Bianco, "CB") show only the current value; the maximum is in the tooltip.
+  // Insanity (called Incubo) and corruption (called Corallo Bianco, "COR") show only the current value; the maximum is in the tooltip.
   const stats = [
     { label: "DEF", title: "Difesa", text: defense },
     { label: "SPD", title: "Velocità", text: speed },
     { label: "INC", title: `Incubo ${insanity.value} / ${insanity.max}`, text: insanity.value },
-    { label: "CB", title: "Corallo Bianco", text: corruption.value }
+    { label: "COR", title: "Corallo Bianco", text: corruption.value }
   ];
   const hr = row.querySelector(".cu-hr");
   if (hr) syncChildren(hr, [statLabel("HR"), String(health.healingrate)]);

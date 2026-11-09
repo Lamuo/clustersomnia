@@ -41,6 +41,7 @@
     <button type="button" data-action="counterAdd">+ Add Counter</button>
   </section>
 
+  {{#if showTags}}
   <section class="sotdl-tracker-tags">
     <div class="sotdl-section-header">Tag (ogni effetto attivo conta da solo; qui aggiungi a mano)</div>
     <div class="sotdl-tag-buttons">
@@ -56,6 +57,7 @@
     </div>
     {{/if}}
   </section>
+  {{/if}}
 
   <section class="sotdl-tracker-effects">
     <div class="sotdl-section-header">

@@ -168,7 +168,8 @@ export function automaticTags(actor) {
 
 /**
  * Every tag of an actor in display order: `{ id, label, name, dir, steps, tier, arrows, sources }`. Automatic and
- * manual steps of the same category and direction add up into one tag; `sources` are the names behind it, for the
+ * manual steps of the same category and direction add up into one tag, and a buff cancels a debuff of the same
+ * category one for one (equal numbers show nothing); `sources` are the names behind it, for the
  * tooltip ("Manuale" for hand-set ones).
  */
 export function effectTags(actor) {
@@ -178,6 +179,17 @@ export function effectTags(actor) {
     const sources = steps.get(key) ?? [];
     sources.push(...Array(Math.abs(signed)).fill("Manuale"));
     steps.set(key, sources);
+  }
+  // A buff and a debuff on the same category cancel one for one: only the surplus is shown, and nothing when equal.
+  for (const category of TAG_CATEGORIES) {
+    const up = steps.get(`${category.id}:up`);
+    const down = steps.get(`${category.id}:down`);
+    if (!up || !down) continue;
+    const cancelled = Math.min(up.length, down.length);
+    up.splice(0, cancelled);
+    down.splice(0, cancelled);
+    if (!up.length) steps.delete(`${category.id}:up`);
+    if (!down.length) steps.delete(`${category.id}:down`);
   }
   const order = id => TAG_CATEGORIES.findIndex(category => category.id === id);
   return [...steps]

@@ -99,6 +99,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
       tempHp: tempHp(this.actor),
       counters: this.counters,
       effects: this.effects,
+      showTags: game.settings.get(FLAG_NAMESPACE, "trackerShowTags"),
       tags: this.tagContext,
       autoTags: automaticTags(this.actor).map((tag) => ({
         ...tag,
