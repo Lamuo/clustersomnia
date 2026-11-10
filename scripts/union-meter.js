@@ -61,6 +61,7 @@ function toggleExpanded(actorId) {
 // Effects and counters only appear on the personal card (personal-card.js); the shared cards stay compact.
 const CARD_CHROME = `<div class="cu-grip" title="Trascina per spostare, doppio clic per ripristinare"><i class="fas fa-grip"></i></div>
     <button type="button" class="cu-popout" title="Stacca in una finestra (per il secondo schermo)"><i class="fas fa-up-right-from-square"></i></button>
+    <button type="button" class="cu-close" title="Chiudi (si riapre dal pulsante nei controlli a sinistra)"><i class="fas fa-xmark"></i></button>
     <div class="cu-resize" title="Trascina per ridimensionare, doppio clic per ripristinare"></div>`;
 
 /* -------------------------------------------- */
@@ -642,6 +643,8 @@ function buildRows(el, skin, party) {
   enableDrag(el, "unionPosition", () => renderMeter());
   enableResize(el, "unionScale", "unionPosition");
   el.querySelector(".cu-popout").addEventListener("click", () => popOut(el, "stack", () => renderMeter()));
+  // The X turns off the same setting as the scene-controls button, which is how it comes back.
+  el.querySelector(".cu-close").addEventListener("click", () => game.settings.set(MODULE_ID, "unionShow", false));
   wireCards(el, skin);
 }
 
@@ -775,7 +778,8 @@ const hosts = new Map();
 /**
  * Registers `host` and fills it with the party cards; `scaleSetting` names the client setting holding its scale.
  * Options: `extras` adds each card's effects and counters; `pick(party)` chooses which PGs get a card (default all);
- * `floating: { positionSetting }` adds the drag grip and resize handle, which then save to the host's own settings;
+ * `floating: { positionSetting, showSetting }` adds the drag grip and resize handle, which then save to the host's
+ * own settings, and the X that turns `showSetting` off;
  * `onFilled(host)` runs after every redraw (to place a floating host).
  */
 export function mountPartyCards(host, scaleSetting, options = {}) {
@@ -815,6 +819,11 @@ async function fillHost(host, options, only = null) {
       enableDrag(host, options.floating.positionSetting, () => { delete host.dataset.key; fillHost(host, options); });
       enableResize(host, host.dataset.scaleSetting, options.floating.positionSetting);
       host.querySelector(".cu-popout").addEventListener("click", () => popOut(host, host.id, () => renderMeter()));
+      // Only a host that names the setting showing it gets a working X.
+      const close = host.querySelector(".cu-close");
+      if (options.floating.showSetting) {
+        close.addEventListener("click", () => game.settings.set(MODULE_ID, options.floating.showSetting, false));
+      } else close.remove();
     }
     wireCards(host, skin, extras);
     host.dataset.key = key;

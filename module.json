@@ -19,7 +19,8 @@
     "styles/tracker.css",
     "styles/union-meter.css",
     "styles/compendium-filters.css",
-    "styles/roll-dialog.css"
+    "styles/roll-dialog.css",
+    "styles/quickref.css"
   ],
   "authors": [
     {

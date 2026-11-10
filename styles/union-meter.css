@@ -864,6 +864,34 @@
   opacity: 1;
 }
 
+/* The X beside it: same tab, next slot. */
+.cu-floating .cu-close {
+  position: absolute;
+  left: 76px;
+  bottom: 100%;
+  width: 24px;
+  height: 16px;
+  margin: 0 0 2px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+  color: #e8dcc4;
+  background: rgb(21 14 13 / 0.85);
+  border: 1px solid #e8dcc4;
+  border-radius: 8px 8px 0 0;
+  opacity: 0.35;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 0.15s;
+}
+
+.cu-floating:hover .cu-close {
+  opacity: 1;
+}
+
 /* In its own window the card fills the top-left corner and the window fits it; no handles needed there. */
 .cu-floating.cu-detached {
   position: absolute !important;
@@ -875,6 +903,7 @@
 
 .cu-floating.cu-detached .cu-grip,
 .cu-floating.cu-detached .cu-popout,
+.cu-floating.cu-detached .cu-close,
 .cu-floating.cu-detached .cu-resize {
   display: none;
 }

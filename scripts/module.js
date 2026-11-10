@@ -6,6 +6,8 @@ import "./union-meter.js";
 import "./combat-party.js";
 import "./personal-card.js";
 import "./sheet-popout.js";
+import "./quickref.js";
+import "./party-inventory.js";
 import "./party-toggle.js";
 import "./weapon-size-damage.js";
 import "./health-guard.js";

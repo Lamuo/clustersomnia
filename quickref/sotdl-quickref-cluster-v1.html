@@ -1,0 +1,1402 @@
+<meta charset="utf-8">
+<title>Shadow Quickref</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest-cluster.webmanifest">
+<meta name="theme-color" content="#121016">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icons/cluster-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#121016; --surface:#1c191f; --ink:#e8e4dc; --ink-muted:#948d82;
+    --border:#38333c; --accent:#a02222; --accent-ink:#ffffff;
+    --safe-top:0px; --safe-bottom:0px;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#eeeae2; --surface:#ffffff; --ink:#211d18; --ink-muted:#6b6357;
+      --border:#d8d0c0; --accent:#a02222; --accent-ink:#ffffff;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eeeae2; --surface:#ffffff; --ink:#211d18; --ink-muted:#6b6357;
+    --border:#d8d0c0; --accent:#a02222; --accent-ink:#ffffff;
+  }
+
+  *{box-sizing:border-box;}
+  button,a{-webkit-tap-highlight-color:transparent; outline:none;}
+  button:focus-visible,a:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Source Sans 3", Candara, sans-serif;
+    line-height:1.3;
+    height:100dvh; display:flex;
+  }
+  main{
+    max-width:1300px; width:100%; margin:0 auto;
+    padding:calc(1.4em + var(--safe-top)) 2em calc(1.2em + var(--safe-bottom));
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column; justify-content:safe center;
+    overflow-y:auto;
+  }
+
+  .titlebar{
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+    gap:.6em; margin:0 0 .7em; flex:0 0 auto;
+  }
+  h1{
+    grid-column:2;
+    font-family:"Cinzel", serif; font-weight:700; text-align:center;
+    font-size:2.1rem; letter-spacing:.03em; margin:0; color:var(--ink);
+  }
+  #themeToggle{
+    grid-column:3; justify-self:start;
+    width:2.1em; height:2.1em; border-radius:50%;
+    border:1px solid var(--border); background:var(--surface); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    padding:0;
+  }
+  #themeToggle svg{width:60%; height:60%;}
+  #themeToggle:hover{border-color:var(--accent); color:var(--accent);}
+
+  .tabs{display:flex; justify-content:center; gap:.5em; margin:0 0 .8em; flex:0 0 auto;}
+  .tab-btn{
+    font-family:"Source Sans 3", Candara, sans-serif; font-weight:700; font-size:.8rem;
+    text-transform:uppercase; letter-spacing:.05em;
+    padding:.4em 1.2em; border-radius:1.2em; border:1px solid var(--border);
+    background:var(--surface); color:var(--ink-muted); cursor:pointer;
+  }
+  .tab-btn.active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+
+  .tabpanel{display:contents;}
+  .tabpanel[hidden]{display:none;}
+
+  a{color:var(--accent); text-decoration:none;}
+
+  fieldset{border:none; border-top:1px solid var(--border); margin:.9em 0 0; padding:0; flex:0 0 auto;}
+  legend{
+    margin:0 .2em; padding:0 .6em 0 0; font-size:.95rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted);
+  }
+  .index{
+    list-style:none; margin:.5em 0 0; padding:0;
+    display:flex; flex-wrap:wrap; gap:.5em;
+  }
+  .index a{
+    display:block; padding:.4em 1em; border-radius:1.2em;
+    background:var(--accent); color:var(--accent-ink);
+    font-size:1.05rem; white-space:nowrap;
+  }
+  .index a:hover, .index a:focus{filter:brightness(1.15);}
+
+  .modal{display:none;}
+  .modal:target{
+    display:flex; position:fixed; inset:0; z-index:10;
+    align-items:center; justify-content:center;
+    background:rgba(0,0,0,.72); padding:1.5em;
+  }
+  .modal-close{position:fixed; inset:0; z-index:11;}
+  .modal-close::after{
+    content:"✕"; position:fixed; top:1em; right:1em;
+    color:#fff; font-size:1.3rem; line-height:1; opacity:.85;
+  }
+  .modal-dialog{
+    position:relative; z-index:12;
+    background:var(--surface); color:var(--ink);
+    border-top:4px solid var(--accent); border-radius:6px;
+    padding:1.1em 1.3em 1.3em; margin:0;
+    max-width:520px; max-height:85vh; width:100%;
+    overflow-y:auto;
+    box-shadow:0 8px 30px rgba(0,0,0,.4);
+  }
+  .modal-dialog h2{
+    font-family:"Cinzel", serif; font-size:1.15rem; margin:0 0 .5em;
+    color:var(--accent);
+  }
+  .modal-dialog p{margin:0 0 .6em; font-size:.92rem;}
+  .modal-dialog p:last-of-type{margin-bottom:0;}
+  .modal-dialog ul{margin:0 0 .6em; padding-left:1.2em; font-size:.92rem;}
+  .modal-dialog li{margin-bottom:.3em;}
+  .modal-dialog b{color:var(--ink);}
+  .modal-dialog a{text-decoration:underline;}
+  cite{display:block; margin-top:.9em; font-size:.75rem; font-style:italic; color:var(--ink-muted);}
+
+  @media (max-width:480px){
+    .modal-dialog{margin:0 .5em; padding:1em;}
+    h1{font-size:1.5rem;}
+  }
+  ::selection{background:var(--accent); color:var(--accent-ink);}
+</style>
+
+<main>
+  <div class="titlebar">
+    <h1>Shadow of the Demon Lord</h1>
+    <button type="button" id="themeToggle" aria-label="Cambia tema"></button>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button type="button" class="tab-btn" id="tabBtnBase" onclick="showTab('base')">Regole Base</button>
+    <button type="button" class="tab-btn" id="tabBtnAggiunte" onclick="showTab('aggiunte')">Regole Ishi</button>
+    <button type="button" class="tab-btn" id="tabBtnRare" onclick="showTab('rare')">Regole Rare</button>
+  </div>
+
+  <div id="tab-base" class="tabpanel">
+
+  <fieldset>
+    <legend>Attacchi</legend>
+    <ul class="index">
+      <li><a href="#mischia">Mischia</a></li>
+      <li><a href="#distanza">Distanza</a></li>
+      <li><a href="#due-armi">Due armi</a></li>
+      <li><a href="#tocco">Tocco</a></li>
+      <li><a href="#carica">Carica</a></li>
+      <li><a href="#disarmare">Disarmare</a></li>
+      <li><a href="#distrarre">Distrarre</a></li>
+      <li><a href="#fuggire">Fuggire</a></li>
+      <li><a href="#finta">Finta</a></li>
+      <li><a href="#afferrare">Afferrare</a></li>
+      <li><a href="#abbattere">Abbattere</a></li>
+      <li><a href="#trascinare">Trascinare</a></li>
+      <li><a href="#spingere">Spingere</a></li>
+      <li><a href="#lottare">Lottare</a></li>
+      <li><a href="#aizzare">Aizzare</a></li>
+      <li><a href="#capriola">Capriola</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Azioni</legend>
+    <ul class="index">
+      <li><a href="#attacco">Attacco</a></li>
+      <li><a href="#incantesimo-utility">Incantesimo Utility</a></li>
+      <li><a href="#concentrarsi">Concentrarsi</a></li>
+      <li><a href="#difendersi">Difendersi</a></li>
+      <li><a href="#terminare-effetto">Terminare un Effetto</a></li>
+      <li><a href="#aiutare">Aiutare</a></li>
+      <li><a href="#nascondersi">Nascondersi</a></li>
+      <li><a href="#cercare">Cercare</a></li>
+      <li><a href="#prepararsi">Prepararsi</a></li>
+      <li><a href="#ricaricare">Ricaricare</a></li>
+      <li><a href="#ritirarsi">Ritirarsi</a></li>
+      <li><a href="#correre">Correre</a></li>
+      <li><a href="#stabilizzare">Stabilizzare</a></li>
+      <li><a href="#usare-oggetto">Usare un Oggetto</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Innescate</legend>
+    <ul class="index">
+      <li><a href="#attacco-gratuito">Attacco Gratuito</a></li>
+      <li><a href="#azione-preparata">Azione Preparata</a></li>
+      <li><a href="#incantesimo-innescato">Incantesimo Innescato</a></li>
+      <li><a href="#attivita-minori">Attività Minori</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Stati</legend>
+    <ul class="index">
+      <li><a href="#addormentato">Addormentato</a></li>
+      <li><a href="#accecato">Accecato</a></li>
+      <li><a href="#affascinato">Affascinato</a></li>
+      <li><a href="#costretto">Costretto</a></li>
+      <li><a href="#confuso">Confuso</a></li>
+      <li><a href="#assordato">Assordato</a></li>
+      <li><a href="#indifeso">Indifeso</a></li>
+      <li><a href="#malato">Malato</a></li>
+      <li><a href="#avvelenato">Avvelenato</a></li>
+      <li><a href="#menomato">Menomato</a></li>
+      <li><a href="#affaticato">Affaticato</a></li>
+      <li><a href="#prono">Prono</a></li>
+      <li><a href="#afferrato-stato">Afferrato</a></li>
+      <li><a href="#immobilizzato">Immobilizzato</a></li>
+      <li><a href="#spaventato">Spaventato</a></li>
+      <li><a href="#rallentato">Rallentato</a></li>
+      <li><a href="#stordito">Stordito</a></li>
+      <li><a href="#sorpreso">Sorpreso</a></li>
+      <li><a href="#incosciente">Incosciente</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Movimento</legend>
+    <ul class="index">
+      <li><a href="#velocita">Velocità</a></li>
+      <li><a href="#terreno-spazio">Terreno &amp; Spazio</a></li>
+      <li><a href="#movimento-speciale">Movimento Speciale</a></li>
+      <li><a href="#cavalcare">Cavalcare</a></li>
+      <li><a href="#portata">Portata</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Ambiente</legend>
+    <ul class="index">
+      <li><a href="#oscuramento">Oscuramento</a></li>
+      <li><a href="#illuminazione">Illuminazione</a></li>
+      <li><a href="#copertura">Copertura</a></li>
+      <li><a href="#invisibilita">Invisibilità</a></li>
+    </ul>
+  </fieldset>
+
+  </div>
+
+  <div id="tab-aggiunte" class="tabpanel" hidden>
+
+  <fieldset>
+    <legend>Zone</legend>
+    <ul class="index">
+      <li><a href="#zone-adiacenza">Zone &amp; Adiacenza</a></li>
+      <li><a href="#movimento-zone">Movimento in Zone</a></li>
+      <li><a href="#attacchi-zone">Attacchi in Zone</a></li>
+      <li><a href="#colori-terreno">Colori Terreno</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Specializzazioni</legend>
+    <ul class="index">
+      <li><a href="#special-base">Di Base</a></li>
+      <li><a href="#special-comuni">Comuni</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Unione</legend>
+    <ul class="index">
+      <li><a href="#punti-unione">Punti Unione</a></li>
+      <li><a href="#bolide">Bolide</a></li>
+      <li><a href="#sferzata">Sferzata</a></li>
+      <li><a href="#magimpatto">Magimpatto</a></li>
+      <li><a href="#terrificare">Terrificare</a></li>
+      <li><a href="#richiamo">Richiamo</a></li>
+      <li><a href="#sfinimento">Sfinimento</a></li>
+      <li><a href="#infusione">Infusione</a></li>
+      <li><a href="#amplificazione">Amplificazione</a></li>
+      <li><a href="#aura-malefica">Aura Malefica</a></li>
+      <li><a href="#aura-benedetta">Aura Benedetta</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Tattiche &amp; Tecniche</legend>
+    <ul class="index">
+      <li><a href="#accerchiamento">Accerchiamento</a></li>
+      <li><a href="#affiancamento">Affiancamento</a></li>
+      <li><a href="#agganciare">Agganciare</a></li>
+      <li><a href="#tripletta">Tripletta</a></li>
+      <li><a href="#atterramento">Atterramento</a></li>
+      <li><a href="#raggirare">Raggirare</a></li>
+      <li><a href="#disingaggio">Disingaggio</a></li>
+      <li><a href="#concentrazione-tecnica">Concentrazione</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Punti Incubo</legend>
+    <ul class="index">
+      <li><a href="#punti-incubo">Punti Incubo</a></li>
+    </ul>
+  </fieldset>
+
+  </div>
+
+  <div id="tab-rare" class="tabpanel" hidden>
+
+  <fieldset>
+    <legend>Oggetti da Attacco</legend>
+    <ul class="index">
+      <li><a href="#acqua-santa">Acqua Santa</a></li>
+      <li><a href="#olio">Olio</a></li>
+      <li><a href="#veleno">Veleno</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Salute &amp; Morte</legend>
+    <ul class="index">
+      <li><a href="#incapacitato">Incapacitato</a></li>
+      <li><a href="#disabilitato">Disabilitato</a></li>
+      <li><a href="#morente">Morente</a></li>
+    </ul>
+  </fieldset>
+
+  <fieldset>
+    <legend>Sociale</legend>
+    <ul class="index">
+      <li><a href="#interazione-sociale">Interazione Sociale</a></li>
+    </ul>
+  </fieldset>
+
+  </div>
+</main>
+
+<!-- ===================== ATTACCHI ===================== -->
+
+<div class="modal" id="mischia">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attacco da Mischia</h2>
+    <p>Tiro per colpire con Forza (Agilità se l'arma è finesse) contro la Difesa del bersaglio entro <a href="#portata">portata</a>, oppure scegli una delle opzioni seguenti.</p>
+    <p><b>Spingente:</b> 1 svantaggio al tiro. Con successo, tu e il bersaglio vi spostate di metri pari al tuo modificatore di Forza.</p>
+    <p><b>Guardato:</b> 1 svantaggio al tiro. Il prossimo attacco contro la tua Difesa prima di fine round ha 1 svantaggio.</p>
+    <p><b>Allungato:</b> +1 metro di portata, ma 1 svantaggio al tiro.</p>
+    <p><b>Spostante:</b> 1 svantaggio al tiro. Con successo, il tuo movimento non innesca attacchi gratuiti da quel bersaglio fino a fine round.</p>
+    <p><b>Sbilanciante:</b> 1 svantaggio al tiro. Con successo (Taglia ≤ tua), tiro Agilità o il bersaglio cade prono.</p>
+    <p>Vedi anche <a href="#due-armi">Due Armi</a>, utilizzabile sia in mischia sia a distanza.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="due-armi">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attacco con Due Armi</h2>
+    <p>Se impugni un'arma in ciascuna mano, e nessuna delle due è cumbersome, puoi usare un'azione per attaccare con entrambe contemporaneamente, in mischia o a distanza. Puoi usarle per attaccare un solo bersaglio o due bersagli diversi.</p>
+    <p><b>Un bersaglio:</b> attacchi con l'arma nella mano principale, facendo il tiro per colpire con 2 svantaggi. Con successo, infliggi il danno normale di quell'arma più danno extra dall'arma nella mano secondaria.</p>
+    <p><b>Due bersagli:</b> attacchi con l'arma principale contro un bersaglio e con la secondaria contro l'altro. Entrambi i tiri per colpire hanno 3 svantaggi.</p>
+    <p>In entrambi i casi, se attacchi mentre impugni anche uno scudo, questo perde la proprietà difensiva fino a fine round.</p>
+    <p><i>Variante (Forbidden Rules):</i> se la penalità per attaccare due bersagli diversi sembra troppo severa, riducila a 1 svantaggio invece di 3.</p>
+    <p><b>Chiarimento FAQ:</b> attaccare con due armi conta come "usare un'azione per attaccare con un'arma" — Perizia/Maestria in Combattimento si applicano normalmente. Se un incantesimo richiede di attaccare con un'arma e impugni due armi, puoi usarne una o entrambe; su due bersagli, l'effetto speciale dell'incantesimo si applica solo al primo attacco.</p>
+    <cite>Core Rulebook, p. 53–68; FAQ Schwalb Entertainment, 09/05/2016</cite>
+  </div>
+</div>
+
+<div class="modal" id="tocco">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Tocco</h2>
+    <p>Se tenti di toccare una creatura non consenziente (per un incantesimo, un effetto, o un'altra ragione), fai un tiro per colpire di Forza o Agilità contro l'Agilità del bersaglio. Con successo, la tocchi.</p>
+    <p>Chiarisce cosa serve per soddisfare la <a href="#portata">portata</a> quando il bersaglio non collabora.</p>
+    <cite>Player's Guide</cite>
+  </div>
+</div>
+
+<div class="modal" id="distanza">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attacco a Distanza</h2>
+    <p>Tiro per colpire con Agilità contro la Difesa del bersaglio, oppure scegli una delle opzioni seguenti.</p>
+    <p><b>Colpo Mirato:</b> 2 svantaggi. Con successo, il GM decide un effetto extra (es. mirare agli occhi impone 1 svantaggio sui tiri basati sulla vista).</p>
+    <p><b>Colpo a Distanza:</b> attacchi oltre la gittata dell'arma, fino al doppio. 1 svantaggio.</p>
+    <p><b>Colpo Stordente:</b> 2 svantaggi. Con successo (Taglia ≤ tua), tiro Agilità o il bersaglio cade prono.</p>
+    <p><b>Inceppamento:</b> con arma "misfire", tiro 0 o meno → 1d6: pari = inceppata (1 minuto per ripararla), dispari = esplode, 2d6 a te.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="carica">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Carica</h2>
+    <p>Tiri per colpire e sfida con 1 svantaggio fino a fine round. Ti muovi fino alla Velocità, poi fai un attacco da mischia o una manovra.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="disarmare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Disarmare</h2>
+    <p>Forza o Agilità contro il maggiore tra Forza e Agilità del bersaglio (2 svantaggi se sei già disarmato). Con successo, il bersaglio lascia cadere un oggetto.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="distrarre">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Distrarre</h2>
+    <p>Intelletto contro Intelletto. Con successo, il prossimo tiro del bersaglio prima di fine round ha 2 svantaggi.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="fuggire">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Fuggire</h2>
+    <p>Se sei <a href="#afferrato-stato">afferrato</a>: Forza o Agilità contro la Forza dell'afferrante. Con successo, rimuovi l'afflizione e ti muovi fino a metà Velocità.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="finta">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Finta</h2>
+    <p>Agilità contro Percezione del bersaglio. Con successo, il prossimo attacco contro Difesa o Agilità del bersaglio prima di fine round successivo ha 2 vantaggi.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="afferrare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Afferrare</h2>
+    <p>Richiede una mano libera. Forza o Agilità contro l'Agilità del bersaglio. Con successo, il bersaglio è <a href="#afferrato-stato">afferrato</a> fino a fine round successivo.</p>
+    <p><b>Creature più grandi:</b> se afferri una creatura più grande di te, quando si muove ti muovi con lei; puoi usare il movimento per arrampicarti sul suo corpo (tiro sfida di Forza, con svantaggi a discrezione del GM). Fallimento: cadi dalla creatura; 0 o meno: cadi e atterri prono.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="abbattere">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Abbattere</h2>
+    <p>Forza contro Agilità (svantaggio/vantaggio per differenza di Taglia). Con successo, il bersaglio cade <a href="#prono">prono</a>.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="lottare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Lottare</h2>
+    <p>Su un bersaglio che stai <a href="#afferrato-stato">afferrando</a>: Forza contro Forza o Agilità del bersaglio, a sua scelta (svantaggio/vantaggio per differenza di Taglia). Con successo scegli: il bersaglio cade prono; subisce danno come da colpo disarmato; oppure, se già prono, diventa indifeso per 1 round.</p>
+    <p><b>Creature più grandi:</b> se afferri una creatura più grande di te, quando si muove ti muovi con lei; puoi usare il movimento per arrampicarti sul suo corpo (tiro sfida di Forza, con svantaggi a discrezione del GM). Fallimento: cadi dalla creatura; 0 o meno: cadi e atterri prono.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="aizzare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Aizzare</h2>
+    <p>Se puoi parlare, azione o azione innescata contro una creatura che vedi. Intelletto contro la sua Volontà. Con successo, fino a fine round attacca te con 1 vantaggio e chiunque altro con 1 svantaggio. Fallimento: è immune finché non completa un riposo.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="capriola">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Capriola</h2>
+    <p>Azione per muoverti fino alla Velocità. Se il movimento innescherebbe un attacco gratuito, tiro sfida di Agilità per evitarlo (1 svantaggio extra per ogni ulteriore attacco gratuito innescato nello stesso movimento).</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="trascinare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Trascinare</h2>
+    <p>Su un bersaglio afferrato della tua Taglia o meno: Forza contro Forza. Con successo, ti muovi fino a metà Velocità e il bersaglio ti segue.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="spingere">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Spingere</h2>
+    <p>Forza contro Forza (svantaggio/vantaggio per differenza di Taglia). Con successo, sposti il bersaglio di 1 metro più il tuo modificatore di Forza.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<!-- ===================== OGGETTI DA ATTACCO ===================== -->
+
+<div class="modal" id="acqua-santa">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Acqua Santa</h2>
+    <p>Puoi attaccare lanciandola contro una creatura o un oggetto che puoi raggiungere. Tiro per colpire di Agilità contro l'Agilità del bersaglio. Con successo, lo bagni e subisce 1 danno per punto di Corruzione. Se è un demone, un diavolo, una fata, uno spirito, o un non-morto, subisce invece 1d6 danno più 1 per punto della sua Corruzione.</p>
+    <cite>Equipaggiamento — Core Rulebook, p. 100–110</cite>
+  </div>
+</div>
+
+<div class="modal" id="olio">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Olio</h2>
+    <p>Puoi attaccare lanciando una fiasca d'olio contro una creatura o un oggetto entro gittata media. Tiro per colpire di Agilità contro l'Agilità del bersaglio. Con successo, l'olio copre il bersaglio finché non passa 1 minuto a ripulirlo. Se il bersaglio coperto d'olio subisce danno da fuoco o fulmine, l'olio prende fuoco: 1d6 danno immediato, poi 1d6 danno a fine di ogni round per 1d6 round (un'azione spegne le fiamme).</p>
+    <cite>Equipaggiamento — Core Rulebook, p. 100–110</cite>
+  </div>
+</div>
+
+<div class="modal" id="veleno">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Veleno</h2>
+    <p>Un'azione per applicarlo a un'arma tagliente/appuntita, rivestire fino a tre frecce/quadrelli/dardi, o spargerlo in cibo o bevande. Arma/munizione avvelenata resta tale per 1 ora o finché non infligge danno.</p>
+    <p><b>Da arma:</b> chi subisce danno fa un tiro sfida di Forza. Fallito, diventa avvelenato per 1 minuto (1d6 danno extra se già avvelenato).</p>
+    <p><b>Da cibo/bevanda:</b> tiro sfida di Forza con 1 svantaggio. Fallito, 1d6 danno e avvelenato per 1 minuto (3d6 danno extra se già avvelenato).</p>
+    <p>Ogni round da avvelenato, tiro sfida di Forza a fine round o 1d6 danno; tre successi rimuovono l'afflizione.</p>
+    <cite>Equipaggiamento — Core Rulebook, p. 100–110</cite>
+  </div>
+</div>
+
+<!-- ===================== AZIONI ===================== -->
+
+<div class="modal" id="attacco">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attacco</h2>
+    <p>Usi un'arma, un incantesimo d'attacco o un altro mezzo per danneggiare o ostacolare una creatura o un oggetto. Vedi <a href="#mischia">Mischia</a> o <a href="#distanza">Distanza</a>.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="incantesimo-utility">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Incantesimo Utility</h2>
+    <p>Lanci un incantesimo che non conta come attacco, seguendo la sequenza normale di lancio: parole, implement, azione, fusione.</p>
+    <cite>Core Rulebook, p. 111–149</cite>
+  </div>
+</div>
+
+<div class="modal" id="concentrarsi">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Concentrarsi</h2>
+    <p>Mantieni un effetto in corso che richiede concentrazione. Se subisci danno o guadagni Follia mentre concentrato, tiro sfida di Volontà o la concentrazione si interrompe.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="difendersi">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Difendersi</h2>
+    <p>Fino a fine round, gli attacchi contro di te hanno 1 svantaggio e i tuoi tiri sfida per resistere a effetti hanno 1 vantaggio. Il beneficio termina se ti viene impedito di usare azioni (es. stordito, confuso, incosciente).</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="terminare-effetto">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Terminare un Effetto</h2>
+    <p>Scegli un effetto creato da un incantesimo che hai lanciato o un talento che hai usato. L'effetto termina immediatamente.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="aiutare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Aiutare</h2>
+    <p>Scegli un bersaglio entro 5 metri che ti vede e ti capisce. Tiro sfida di Intelletto. Con successo, il bersaglio fa il suo prossimo tiro per colpire o sfida prima di fine round con 1 vantaggio.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="nascondersi">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Nascondersi</h2>
+    <p>Puoi tentare di nasconderti solo quando non sei osservato e ti trovi in un'area pesantemente oscurata o hai almeno tre quarti di copertura. Tiro sfida di Agilità: con successo diventi nascosto finché le condizioni non decadono o fai qualcosa che ti tradisce.</p>
+    <p>Mentre sei nascosto le altre creature non possono sceglierti come bersaglio (restando comunque soggetto a effetti ad area); una creatura può tentare di indovinare la tua posizione attaccando con 3 svantaggi. I tuoi attacchi contro chi non ti vede hanno 1 vantaggio.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="cercare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Cercare</h2>
+    <p>Tiro sfida di Percezione per trovare un oggetto nascosto, oppure tiro per colpire di Percezione contro l'Agilità di una creatura nascosta. Con successo, non è più nascosta da te né da chi condividi la scoperta.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="prepararsi">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Prepararsi</h2>
+    <p>Scegli un'attività che normalmente useresti un'azione per svolgere e descrivi il Trigger che la scatena. Se l'evento si verifica prima di fine round, la esegui come <a href="#azione-preparata">azione innescata</a>, con 1 vantaggio su qualsiasi tiro per colpire o sfida richiesto. Altrimenti non succede nulla.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="ricaricare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Ricaricare</h2>
+    <p>Ricarichi un'arma che ha la proprietà reload, rendendola di nuovo pronta a sparare.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="ritirarsi">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Ritirarsi</h2>
+    <p>Ti muovi fino a metà della tua Velocità senza innescare attacchi gratuiti dalle creature che stai lasciando.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="correre">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Correre</h2>
+    <p>Ti muovi fino al doppio della tua Velocità in un'unica azione.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="stabilizzare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Stabilizzare</h2>
+    <p>Tiro sfida di Intelletto per guarire 1 danno a una creatura incapacitata entro portata (1 svantaggio se la creatura sta morendo), impedendole di peggiorare.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="usare-oggetto">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Usare un Oggetto</h2>
+    <p>Interagisci con un oggetto che tieni, indossi o puoi raggiungere: bere una pozione, aprire una porta con una chiave, e così via.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<!-- ===================== INNESCATE ===================== -->
+
+<div class="modal" id="attacco-gratuito">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attacco Gratuito</h2>
+    <p>Quando una creatura entro la tua portata si allontana volontariamente, puoi usare un'azione innescata per attaccarla con un'arma da mischia che impugni.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="azione-preparata">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Azione Preparata</h2>
+    <p>Se hai usato <a href="#prepararsi">Prepararsi</a> nel tuo turno, quando l'evento scatenante scelto si verifica esegui l'attività preparata come azione innescata, con 1 vantaggio.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<div class="modal" id="incantesimo-innescato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Incantesimo Innescato</h2>
+    <p>Alcuni incantesimi indicano esplicitamente di poter essere lanciati con un'azione innescata invece che con un'azione normale.</p>
+    <cite>Core Rulebook, p. 111–149</cite>
+  </div>
+</div>
+
+<div class="modal" id="attivita-minori">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attività Minori</h2>
+    <p>Così minime da non costare azione, azione innescata, né movimento — far cadere o raccogliere un oggetto, sfoderare o riporre un'arma, aprire o chiudere una porta. 1 per turno veloce, 2 per turno lento.</p>
+    <cite>Core Rulebook, p. 53–68</cite>
+  </div>
+</div>
+
+<!-- ===================== STATI ===================== -->
+
+<div class="modal" id="addormentato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Addormentato</h2>
+    <p>È <a href="#prono">prona</a> e <a href="#incosciente">incosciente</a>. Un'altra creatura può usare un'azione per svegliarla. Subire danno rimuove l'afflizione, salvo indicazione contraria.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="accecato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Accecato</h2>
+    <p>Non può vedere e tratta tutto come totalmente oscurato. Le altre creature la attaccano con 1 vantaggio contro Difesa/Agilità. I tiri sfida di Percezione basati sulla vista falliscono automaticamente. La Velocità diventa 2, se non già inferiore.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="affascinato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Affascinato</h2>
+    <p>Vede la fonte dell'afflizione come un amico fidato e non può sceglierla come bersaglio dei propri attacchi.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="costretto">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Costretto</h2>
+    <p>Non può usare azioni né muoversi. Durante ogni turno veloce, la creatura che ha imposto l'afflizione può forzarla a muoversi o usare un'azione.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="confuso">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Confuso (Dazed)</h2>
+    <p>Non può usare azioni in questo round.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="assordato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Assordato</h2>
+    <p>Non può sentire; i tiri sfida di Percezione per ascoltare falliscono automaticamente.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="indifeso">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Indifeso</h2>
+    <p>Difesa 5, non può usare azioni, e i tiri sfida con attributi falliscono automaticamente. Può ancora percepire l'ambiente circostante.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="malato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Malato (Diseased)</h2>
+    <p>Tiri per colpire e tiri sfida con 1 svantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="avvelenato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Avvelenato (Poisoned)</h2>
+    <p>Tiri per colpire e tiri sfida con 1 svantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="menomato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Menomato (Impaired)</h2>
+    <p>Tiri per colpire e tiri sfida con 1 svantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="affaticato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Affaticato (Fatigued)</h2>
+    <p>Tiri per colpire e tiri sfida con 1 svantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="prono">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Prono</h2>
+    <p>È a terra; le altre creature possono muoversi attraverso il suo spazio. Può muoversi solo strisciando o alzarsi. Tiri di Forza/Agilità con 1 svantaggio. Chi può raggiungerla attacca con 1 vantaggio; chi non può, attacca contro la sua Difesa con 1 svantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="afferrato-stato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Afferrato (Grabbed)</h2>
+    <p>Se la sua Taglia è pari o inferiore a quella dell'afferrante, non può allontanarsi finché non rimuove l'afflizione (es. con la manovra <a href="#fuggire">Fuggire</a>).</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="immobilizzato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Immobilizzato</h2>
+    <p>Velocità 0 e non beneficia di bonus a Velocità. Le altre creature la attaccano con 1 vantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="spaventato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Spaventato</h2>
+    <p>Tiri per colpire e sfida con 1 svantaggio. Non può fare turni veloci.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="rallentato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Rallentato</h2>
+    <p>Può fare solo un turno lento, la Velocità è dimezzata e non beneficia di bonus a Velocità.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="stordito">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Stordito</h2>
+    <p>Non può muoversi o usare azioni. Fallisce automaticamente tutti i tiri sfida. Le altre creature la attaccano con 1 vantaggio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="sorpreso">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Sorpreso</h2>
+    <p>Non può usare azioni, non può muoversi, e fallisce automaticamente i tiri sfida — fino alla fine del primo round di combattimento.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="incosciente">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Incosciente</h2>
+    <p>Non può agire, muoversi o percepire. Difesa 5. Fallisce automaticamente tutti i tiri sfida.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<!-- ===================== SALUTE & MORTE ===================== -->
+
+<div class="modal" id="incapacitato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Incapacitato</h2>
+    <p>Diventi incapacitato quando il danno accumulato eguaglia la tua Salute. Cadi <a href="#prono">prono</a>. Resti incapacitato finché il danno non scende sotto la Salute. Se subisci altro danno mentre sei incapacitato, <b>muori</b>.</p>
+    <p>Le creature diverse dai PG che diventano incapacitate muoiono o cadono <a href="#incosciente">incoscienti</a> per 1d3 ore (a scelta del GM). I PG diventano invece <a href="#disabilitato">disabilitati</a>.</p>
+    <p><i>Variante — Morte Istantanea (Forbidden Rules):</i> quando una creatura subisce da un'unica fonte danno pari o superiore alla propria Salute, invece di morire subito fa un tiro sfida di Forza. Successo: muore dopo 1d3 round se non guarita. Fallimento: muore subito.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="disabilitato">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Disabilitato</h2>
+    <p>I personaggi disabilitati sono <a href="#indifeso">indifesi</a>.</p>
+    <p><b>Tiro del Destino:</b> a fine di ogni round da disabilitato, tira 1d6. Con 1, inizi a <a href="#morente">morire</a>. Con 6, guarisci 1 danno e diventi <a href="#menomato">menomato</a> per 1 minuto. Altri risultati, nessun effetto. Dopo 3 round consecutivi ancora disabilitato, diventi incosciente per 1d3 ore.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="morente">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Morente</h2>
+    <p>I personaggi morenti sono incoscienti. A fine di ogni round, tira 1d6: con 1 muori, con 6 diventi disabilitato.</p>
+    <p><i>Variante — Destino Semplificato (Forbidden Rules):</i> invece di Disabilitato/Morente, quando il danno eguaglia la Salute un PG tira 1d6 sulla tabella Destino: 1 = muori subito; 2 = prono e incosciente, muori dopo 1d3 round se non guarito; 3 = incosciente, muori dopo 1d6 minuti se non guarito; 4 = incosciente 1d6 minuti poi guarisci 1 danno; 5 = incosciente 1d3 round poi guarisci 1 danno; 6 = incosciente 1 round poi guarisci 1 danno. Ogni altra creatura cade prona, e il GM decide se diventa incosciente per 1d3 ore o muore.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<!-- ===================== SOCIALE ===================== -->
+
+<div class="modal" id="interazione-sociale">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Interazione Sociale</h2>
+    <p>Gestita tramite interpretazione. Il GM può richiedere un tiro per colpire quando tenti di alterare comportamento o convinzioni di un'altra creatura tramite conversazione — Intelletto e Volontà sono gli attributi più usati. Se il totale del tiro è 0 o meno, l'effetto è opposto a quello desiderato.</p>
+    <p><b>Rendere Amico:</b> Volontà contro Volontà. Successo: diventa amichevole.</p>
+    <p><b>Ingannare:</b> Intelletto contro Intelletto. Successo: crede alla menzogna finché non si rivela falsa.</p>
+    <p><b>Intimidire:</b> Volontà (o Forza se infliggi dolore) contro Volontà. Successo: si comporta come vuoi.</p>
+    <p><b>Persuadere:</b> Volontà contro Volontà. Successo: fa ciò che desideri.</p>
+    <p><b>Schernire:</b> Intelletto contro Volontà. Successo: diventa arrabbiata con te o con chi hai scelto.</p>
+    <p><i>Variante — Combattimento Sociale (Forbidden Rules):</i> ricalca le situazioni sociali come un combattimento a round (Azioni/Interpretazione/Scambio/Risoluzione), con Compostezza (Volontà − Follia) e Influenza (equivalente sociale del danno, parte da 0 ogni volta). Mai usata dal GM contro i PG. Quando l'Influenza eguaglia la Compostezza, si applica l'effetto dell'ultimo attacco sociale subito.</p>
+    <cite>Core Rulebook, p. 31–53; variante Forbidden Rules</cite>
+  </div>
+</div>
+
+<!-- ===================== MOVIMENTO ===================== -->
+
+<div class="modal" id="velocita">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Velocità</h2>
+    <p>Nel tuo turno ti muovi fino alla Velocità in metri, con l'andatura che preferisci.</p>
+    <p><b>Cauta:</b> lenta e silenziosa — Percezione con 1 vantaggio.</p>
+    <p><b>A Piedi:</b> andatura normale, sostenibile per ore.</p>
+    <p><b>Passo Svelto:</b> 1 ora conta come 2 — Percezione con 1 svantaggio.</p>
+    <p><b>Di Corsa:</b> 1 ora conta come 4 — Percezione con 2 svantaggi, non sostenibile a lungo.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="terreno-spazio">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Terreno &amp; Spazio</h2>
+    <p><b>Terreno Difficile:</b> rovine, macerie, pendii ripidi, sottobosco dimezzano la Velocità (cumulativo tra più tipi).</p>
+    <p><b>Spazi Stretti:</b> liberi se larghi quanto la tua Taglia; a metà Velocità se larghi la metà del tuo spazio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="movimento-speciale">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Movimento Speciale</h2>
+    <p><b>Bilanciarsi:</b> terreno insidioso — tiro sfida di Agilità. Fallito ti fermi; 0 o meno cadi prono.</p>
+    <p><b>Arrampicarsi / Nuotare:</b> contano come terreno difficile.</p>
+    <p><b>Strisciare:</b> l'unico modo per una creatura prona di muoversi, a metà Velocità.</p>
+    <p><b>Volare:</b> fino alla Velocità in qualsiasi direzione. Cadi se atterreresti prono, la Velocità scende a 0, o non puoi usare azioni.</p>
+    <p><b>Saltare in basso:</b> atterri in sicurezza se sotto i 5 metri. <b>In alto:</b> metà mod. Agilità (mod. intero se ti sei mosso 2+ metri prima). <b>In lungo:</b> 2 metri + mod. Agilità (+2 metri se ti sei mosso prima). Deduci i metri saltati dal movimento del turno; atterri prono se finisci il movimento a metà salto.</p>
+    <p><b>Infiltrarsi:</b> tiro sfida di Agilità per muoverti senza far rumore. Fallito: le creature vicine ti sentono. 0 o meno: fai molto rumore.</p>
+    <p><b>Teletrasporto:</b> movimento magico istantaneo, ignora ostacoli e terreno difficile.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="cavalcare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Cavalcare</h2>
+    <p>Una cavalcatura è qualsiasi creatura più grande di te disposta a portarti. Usi il movimento per montare/smontare una creatura a portata; usi la sua Velocità al posto della tua.</p>
+    <p>Tu e la cavalcatura condividete un'azione per turno. Potete attaccare entrambi nella stessa azione, ma ciascuno con 2 svantaggi (una sola volta per round in totale). Se non puoi usare azioni, la cavalcatura agisce secondo la sua natura.</p>
+    <p>Se cadi prono mentre cavalchi, cadi dalla cavalcatura in uno spazio entro 1 metro. Se è la cavalcatura a cadere prona, tiro sfida di Agilità: fallito, subisci 1d6 + Taglia della cavalcatura e diventi immobilizzato finché non si alza o la allontani.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="portata">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Portata</h2>
+    <p><b>Tu:</b> il bersaglio o l'effetto origina da te.</p>
+    <p><b>Portata:</b> devi poter toccare il bersaglio. Se non è consenziente, vedi <a href="#tocco">Tocco</a>.</p>
+    <p><b>Corta:</b> entro 5 metri.</p>
+    <p><b>Media:</b> entro 20 metri.</p>
+    <p><b>Lunga:</b> entro 100 metri.</p>
+    <p><b>Estrema:</b> entro 500 metri.</p>
+    <p><b>Vista:</b> devi vedere il bersaglio o il punto d'origine.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<!-- ===================== AMBIENTE ===================== -->
+
+<div class="modal" id="oscuramento">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Oscuramento</h2>
+    <p><b>Parzialmente Oscurato:</b> pioggia, nebbia, ombre. I tiri legati alla vista hanno 1 svantaggio.</p>
+    <p><b>Pesantemente Oscurato:</b> pioggia intensa, nebbia fitta. I tiri legati alla vista hanno 2 svantaggi.</p>
+    <p><b>Totalmente Oscurato:</b> buio o luce accecante. Creature e oggetti non sono visibili; chi ci si trova dentro è <a href="#accecato">accecato</a>.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="illuminazione">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Illuminazione</h2>
+    <p><b>Illuminato:</b> vedi tutto ciò che è nel tuo raggio visivo e non nascosto.</p>
+    <p><b>Ombre:</b> confine tra luce e buio — parzialmente oscurato.</p>
+    <p><b>Oscurità:</b> assenza totale di luce — totalmente oscurato.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="copertura">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Copertura</h2>
+    <p><b>Metà Coperto:</b> i tiri a distanza contro di te hanno 1 svantaggio.</p>
+    <p><b>Tre Quarti Coperto:</b> i tiri a distanza contro di te hanno 2 svantaggi.</p>
+    <p><b>Totalmente Coperto:</b> non puoi essere scelto come bersaglio.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<div class="modal" id="invisibilita">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Invisibilità</h2>
+    <p>Attacchi con 1 vantaggio contro i bersagli che non possono vederti. Una creatura invisibile è considerata totalmente oscurata, ma fa comunque rumore, lascia impronte e sposta liquidi.</p>
+    <cite>Core Rulebook, p. 31–53</cite>
+  </div>
+</div>
+
+<!-- ===================== ZONE ===================== -->
+
+<div class="modal" id="zone-adiacenza">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Zone &amp; Adiacenza</h2>
+    <p>Il GM divide l'area di gioco in zone (es. "dietro la locanda", un tratto di corridoio) invece di usare distanze precise. Una zona è adiacente a ogni zona che tocca, purché si possa passare da una all'altra; il GM decide quante creature entrano in una zona.</p>
+    <p>All'inizio del combattimento il GM crea le zone in base alle posizioni di partenza, aggiungendone altre secondo necessità.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="movimento-zone">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Movimento in Zone</h2>
+    <p>Ti muovi liberamente dentro la tua zona. Uscire da una zona ed entrare in una adiacente richiede movimento o un'azione di carica/ritirata. <a href="#correre">Correre</a> sposta di due zone; correre e muoversi sposta di tre.</p>
+    <p>Uscire da una zona senza ritirarti innesca attacchi gratuiti da 1d3−1 creature nella zona lasciata. Il terreno difficile richiede il doppio del movimento (o un'azione per correre) per lasciare la zona; una creatura rallentata può lasciare una zona solo usando un'azione per correre più il movimento.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="attacchi-zone">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Attacchi in Zone</h2>
+    <p><b>Mischia:</b> contro qualsiasi bersaglio nella stessa zona (la portata viene ignorata).</p>
+    <p><b>Distanza:</b> gittata corta o portata ≤5 m → stessa zona. Media o ≤20 m → stessa zona o adiacente. Lunga o ≤100 m → entro tre zone. Estrema → quasi ovunque il percorso sia libero.</p>
+    <p><b>Area:</b> il punto d'origine segue le stesse regole di gittata. Creature colpite per zona secondo la forma: cono → lunghezza in metri − 1 (min 1); cilindro → raggio in metri; linea → larghezza in metri − 1 (min 1); sfera → raggio in metri — salvo che il GM decida che l'area riempie l'intera zona. Se i bersagli superano il massimo, si determina casualmente chi viene colpito.</p>
+    <p><b>Copertura e oscuramento:</b> a discrezione del GM, in base a quanto ne offre la zona nel suo complesso.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<div class="modal" id="colori-terreno">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Colori Terreno</h2>
+    <p><b>Verde:</b> accovacciarsi.</p>
+    <p><b>Viola:</b> dislivello — saltare o arrampicarsi.</p>
+    <p><b>Blu:</b> nuotare.</p>
+    <p><b>Giallo:</b> terreno sfavorevole — svantaggio a tutti i tiri, più possibili altri effetti.</p>
+    <p><b>Rosa:</b> terreno favorevole — vantaggio a tutti i tiri, più possibili altri effetti.</p>
+    <p><b>Nero:</b> non attraversabile.</p>
+    <cite>Clustersomnia Ruleset</cite>
+  </div>
+</div>
+
+<!-- ===================== SPECIALIZZAZIONI ===================== -->
+
+<div class="modal" id="special-base">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Specializzazioni di Base</h2>
+    <p>Ogni creatura ottiene una Specializzazione in base alla sua caratteristica più alta (in caso di parità, se ne sceglie una sola).</p>
+    <p><b>Vigoroso:</b> Forza.</p>
+    <p><b>Rapido:</b> Agilità.</p>
+    <p><b>Arcano:</b> Intelletto.</p>
+    <p><b>Spirituale:</b> Volontà.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="special-comuni">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Specializzazioni Comuni</h2>
+    <p>Nascoste finché non si esegue uno scan con oggetti o abilità specifiche. Ce ne sono altre da scoprire nel tempo.</p>
+    <p><b>Volante:</b> impone svantaggio ai colpi subiti, tranne da chi è Volante o attacca a Portata.</p>
+    <p><b>Nuotatore:</b> nessun impedimento nelle zone d'acqua, e vantaggio ai tiri per colpire lì.</p>
+    <p><b>Scalatore:</b> nessun impedimento su terreni difficili o ad arrampicarsi.</p>
+    <p><b>Pesante:</b> metà danni, tranne se cade prono.</p>
+    <p><b>Elusivo:</b> impone svantaggio ai colpi subiti, tranne da chi è Veloce o attacca a Portata.</p>
+    <p><b>Corazzato:</b> metà danni, tranne dalle magie.</p>
+    <p><b>Magimmunità:</b> metà danni, tranne dagli attacchi fisici.</p>
+    <p><b>Resiliente:</b> metà danni, tranne dalle Abilità Unione.</p>
+    <p><b>Veloce:</b> chi ha Velocità 14+ è Veloce. Con un movimento può spostarsi di due zone invece di una (non due volte di seguito).</p>
+    <p><b>Portata:</b> bonus di Precisione secondo la portata dell'arma o degli attacchi. In certe condizioni può colpire zone adiacenti.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<!-- ===================== UNIONE ===================== -->
+
+<div class="modal" id="punti-unione">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Punti Unione</h2>
+    <p>Ogni personaggio ha una Barra Unione (massimo 5 Punti Unione, PU). Guadagni 1 PU quando: effettui una manovra, lanci una magia, aiuti un alleato, o usi un'Abilità Unione. I PU si spendono per usare le Tecniche.</p>
+    <p>Le Abilità Unione sono manovre a coppia: un giocatore spende un'azione per usarla, un alleato spende una reazione per parteciparvi. La combinazione disponibile dipende dalle Specializzazioni di base dei due PG coinvolti (vedi le voci sotto).</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="bolide">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Bolide <small style="font-size:.6em; opacity:.7">Vigoroso + Vigoroso</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> uno dei due effettua un attacco con un'arma, o disarmato, con 1 vantaggio. Se colpisce, il bersaglio diventa <a href="#menomato">menomato</a>.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="sferzata">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Sferzata <small style="font-size:.6em; opacity:.7">Vigoroso + Rapido</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> un alleato aiuta l'altro a raggiungere una zona adiacente senza provocare attacchi di opportunità. Chi viene aiutato ottiene 1d6 danni aggiuntivi per il round corrente.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="magimpatto">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Magimpatto <small style="font-size:.6em; opacity:.7">Vigoroso + Arcano</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> un potente attacco combinato. Un alleato effettua un attacco o una magia con 1 vantaggio e 2d6 danni extra per il turno.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="terrificare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Terrificare <small style="font-size:.6em; opacity:.7">Vigoroso + Spirituale</small></h2>
+    <p><b>Condizione:</b> posizionati in zone adiacenti.</p>
+    <p><b>Effetto:</b> entrambi ottenete +1 Difesa fino a fine round. Attaccate con l'arma e, se colpite, infliggete <a href="#spaventato">spaventato</a>.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="richiamo">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Richiamo <small style="font-size:.6em; opacity:.7">Rapido + Rapido</small></h2>
+    <p><b>Condizione:</b> posizionati in zone adiacenti.</p>
+    <p><b>Effetto:</b> un alleato aiuta l'altro ad avvicinarsi alla sua stessa zona senza provocare attacchi di opportunità. Chi viene aiutato ottiene +2 Precisione per il round corrente.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="sfinimento">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Sfinimento <small style="font-size:.6em; opacity:.7">Rapido + Arcano</small></h2>
+    <p><b>Condizione:</b> posizionati in zone adiacenti.</p>
+    <p><b>Effetto:</b> entrambi ottenete +1 Difesa fino a fine round. Attaccate con l'arma e, se colpite, infliggete <a href="#affaticato">affaticato</a>.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="infusione">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Infusione <small style="font-size:.6em; opacity:.7">Rapido + Spirituale</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> un potente potenziamento. Un alleato ottiene +2 Precisione e +1 Difesa fino a fine turno.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="amplificazione">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Amplificazione <small style="font-size:.6em; opacity:.7">Arcano + Arcano</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> uno dei due effettua una magia con 1 vantaggio. Se colpisce, il bersaglio diventa <a href="#rallentato">rallentato</a>.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="aura-malefica">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Aura Malefica <small style="font-size:.6em; opacity:.7">Arcano + Spirituale</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> create una zona magica che dà svantaggio a tutti gli avversari per il round.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="aura-benedetta">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Aura Benedetta <small style="font-size:.6em; opacity:.7">Spirituale + Spirituale</small></h2>
+    <p><b>Condizione:</b> stessa zona.</p>
+    <p><b>Effetto:</b> create una zona magica che dà vantaggio a tutti gli alleati per il round.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<!-- ===================== TATTICHE & TECNICHE ===================== -->
+
+<div class="modal" id="accerchiamento">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Accerchiamento <small style="font-size:.6em; opacity:.7">Tattica</small></h2>
+    <p>Usi un movimento all'interno della zona per accerchiare l'avversario. Effettuabile solo se un altro alleato è presente nella zona. Ottieni vantaggio ai tiri per colpire su quel bersaglio finché non disingaggia o cambia zona.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="affiancamento">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Affiancamento <small style="font-size:.6em; opacity:.7">Tattica</small></h2>
+    <p>Se nella tua zona è presente un altro alleato, quando attacchi o usi una magia hai +1 Precisione per alleato, fino a un massimo di 2.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="agganciare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Agganciare <small style="font-size:.6em; opacity:.7">Tattica</small></h2>
+    <p>Se manchi un bersaglio, ottieni +4 Precisione fino al prossimo turno contro lo stesso bersaglio. Se lo colpisci, l'effetto svanisce.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="tripletta">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Tripletta <small style="font-size:.6em; opacity:.7">Tattica</small></h2>
+    <p>Se attacchi un avversario già colpito da altri due alleati in questo turno, il tuo attacco o magia infligge 2d6 danni aggiuntivi.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="atterramento">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Atterramento <small style="font-size:.6em; opacity:.7">Tecnica — 2 PU</small></h2>
+    <p>Consuma la tua reazione dopo un attacco o una magia offensiva eseguita con successo, per mandare prona la creatura.</p>
+    <p>Ripetere questa Tecnica nello stesso combattimento costa 1 PU in più.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="raggirare">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Raggirare <small style="font-size:.6em; opacity:.7">Tecnica — 2 PU</small></h2>
+    <p>Spendi la tua reazione e scegli una creatura: il suo prossimo attacco contro di te ha svantaggio. Se lo subisce comunque, riceve 2d6 danni in più dal tuo prossimo attacco o magia offensiva riuscita.</p>
+    <p>Ripetere questa Tecnica nello stesso combattimento costa 1 PU in più.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="disingaggio">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Disingaggio <small style="font-size:.6em; opacity:.7">Tecnica — 2 PU</small></h2>
+    <p>Spendi la tua reazione e cambia zona senza provocare attacchi di opportunità. Non puoi usare <a href="#correre">Correre</a> e questa Tecnica nello stesso turno.</p>
+    <p>Ripetere questa Tecnica nello stesso combattimento costa 1 PU in più.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<div class="modal" id="concentrazione-tecnica">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Concentrazione <small style="font-size:.6em; opacity:.7">Tecnica — 2 PU</small></h2>
+    <p>Ti concentri ed esegui una magia di rango 0 o 1 senza consumare energia, oppure — quando attacchi con successo — consuma la tua reazione e infliggi <a href="#rallentato">rallentato</a>.</p>
+    <p>Ripetere questa Tecnica nello stesso combattimento costa 1 PU in più.</p>
+    <cite>Regole nuove Clustersomnia</cite>
+  </div>
+</div>
+
+<!-- ===================== PUNTI INCUBO ===================== -->
+
+<div class="modal" id="punti-incubo">
+  <a href="#_" class="modal-close"></a>
+  <div class="modal-dialog">
+    <h2>Punti Incubo</h2>
+    <p>Sostituiscono la Follia. Massimo pari alla Volontà; la maggior parte dei personaggi inizia a 0.</p>
+    <p>Guadagnarli ti rende spaventato per il round corrente. Se sei già spaventato, diventi stordito per la durata. Quando il totale eguaglia la Volontà, rimuovi lo spaventato e tira 1d20 sulla tabella; poi riduci i Punti Incubo di 1d6 + mod. Volontà (minimo 1).</p>
+    <p><b>1 — Incubo Interiore:</b> il tuo corpo viene posseduto da un'entità esterna.</p>
+    <p><b>2–3 — Catatonia:</b> cadi e diventi indifeso. Fine di ogni ora, 1d6: 4+ termina.</p>
+    <p><b>4–5 — Autolesionismo:</b> devi attaccare te stesso nel prossimo turno (non puoi fallire).</p>
+    <p><b>6–7 — Stremato:</b> fino al prossimo riposo, il tuo tasso di guarigione è 0.</p>
+    <p><b>8–9 — Allucinazioni:</b> devi tagliarti o graffiarti (1 danno) ogni round finché non guarisci; 1d6, 5+ termina.</p>
+    <p><b>10–11 — Violenza:</b> devi fare un turno veloce ogni round e attaccare la creatura più vicina, amica o nemica; 1d6, 5+ termina.</p>
+    <p><b>12–13 — Panico:</b> spaventato, puoi solo muoverti; 1d6, 5+ termina.</p>
+    <p><b>14–15 — Confusione:</b> diventi confuso; 1d6, 5+ termina.</p>
+    <p><b>16–17 — Furia:</b> puoi solo attaccare o usare magie offensive, con 1 vantaggio e +1d6 danno; 1d6, 4+ termina.</p>
+    <p><b>18–19 — Risoluto:</b> tutti i tiri con 1 vantaggio fino al prossimo riposo.</p>
+    <p><b>20 — Rivelazione:</b> Punti Incubo −1d6; permanentemente 1 vantaggio ai tiri di Volontà contro i Punti Incubo.</p>
+    <cite>CLUSTERSOMNIA — Ruleset SotDL</cite>
+  </div>
+</div>
+
+<script>
+  var BULB_LIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M9.2 18.2h5.6M10 21h4"/>'
+    + '<path d="M12 3.2a6.3 6.3 0 0 0-3.7 11.4c.6.43 1 .95 1.1 1.66h5.2c.1-.71.5-1.23 1.1-1.66A6.3 6.3 0 0 0 12 3.2z"/>'
+    + '<path d="M12 .6v1.3M4.6 4.6l.9.9M19.4 4.6l-.9.9M1 12.4h1.3M21.7 12.4H23"/>'
+    + '</svg>';
+  var BULB_UNLIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+    + '<path d="M9.2 18.2h5.6M10 21h4"/>'
+    + '<path d="M12 3.2a6.3 6.3 0 0 0-3.7 11.4c.6.43 1 .95 1.1 1.66h5.2c.1-.71.5-1.23 1.1-1.66A6.3 6.3 0 0 0 12 3.2z"/>'
+    + '</svg>';
+
+  var root = document.documentElement;
+  var toggle = document.getElementById('themeToggle');
+  var STORE_KEY = 'sotdl-quickref-theme';
+
+  function systemPrefersLight(){
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  }
+  function effectiveTheme(){
+    return root.getAttribute('data-theme') || (systemPrefersLight() ? 'light' : 'dark');
+  }
+  var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+  function paint(){
+    var eff = effectiveTheme();
+    toggle.innerHTML = eff === 'light' ? BULB_LIT : BULB_UNLIT;
+    toggle.setAttribute('aria-label', eff === 'light' ? 'Passa a tema scuro' : 'Passa a tema chiaro');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', eff === 'light' ? '#eeeae2' : '#121016');
+    try{ if (window.AndroidHost && window.AndroidHost.onThemeChanged) window.AndroidHost.onThemeChanged(eff); }catch(e){}
+  }
+
+  try{
+    var stored = localStorage.getItem(STORE_KEY);
+    if (stored === 'light' || stored === 'dark') root.setAttribute('data-theme', stored);
+  }catch(e){}
+  paint();
+
+  toggle.addEventListener('click', function(){
+    var next = effectiveTheme() === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem(STORE_KEY, next); }catch(e){}
+    paint();
+  });
+
+  var TAB_KEY = 'sotdl-quickref-tab';
+  var tabBase = document.getElementById('tab-base');
+  var tabRare = document.getElementById('tab-rare');
+  var tabAggiunte = document.getElementById('tab-aggiunte');
+  var btnBase = document.getElementById('tabBtnBase');
+  var btnRare = document.getElementById('tabBtnRare');
+  var btnAggiunte = document.getElementById('tabBtnAggiunte');
+
+  function showTab(name){
+    tabBase.hidden = name !== 'base';
+    tabRare.hidden = name !== 'rare';
+    tabAggiunte.hidden = name !== 'aggiunte';
+    btnBase.classList.toggle('active', name === 'base');
+    btnRare.classList.toggle('active', name === 'rare');
+    btnAggiunte.classList.toggle('active', name === 'aggiunte');
+    try{ localStorage.setItem(TAB_KEY, name); }catch(e){}
+  }
+
+  var initialTab = 'base';
+  try{
+    var storedTab = localStorage.getItem(TAB_KEY);
+    if (storedTab === 'aggiunte' || storedTab === 'rare') initialTab = storedTab;
+  }catch(e){}
+  showTab(initialTab);
+
+  if ('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw-cluster.js').catch(function(){});
+  }
+</script>

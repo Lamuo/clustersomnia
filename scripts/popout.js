@@ -42,44 +42,49 @@ function rememberWindow(key, win) {
 
 /**
  * Moves a floating card into its own browser window (to park it on a second screen).
- * The card is fitted to the window.
+ * The card is fitted to the window; with `fill` the element is left to fill it through its own CSS instead
+ * (the quickref, whose content reflows).
  */
-export function popOut(el, key, onDock) {
+export function popOut(el, key, onDock, { title = "Party", fill = false } = {}) {
   const existing = windows.get(el);
   if (existing) return existing.focus();
 
   const box = el.getBoundingClientRect();
-  const win = openWindow(key, { w: Math.ceil(box.width) + 24, h: Math.ceil(box.height) + 24, title: "Party" });
+  const margin = fill ? 0 : 24;
+  const win = openWindow(key, { w: Math.ceil(box.width) + margin, h: Math.ceil(box.height) + margin, title });
   if (!win) return;
   const doc = win.document;
 
   el.classList.add("cu-detached");
   doc.body.append(el);
 
-  // `zoom` scales every pixel of the card (fixed gaps included), so it can be fitted to any window size.
-  let last = "";
-  const fit = () => {
-    doc.body.style.zoom = 1;
-    const width = el.offsetWidth;
-    const height = el.offsetHeight;
-    if (!width || !height) return;
-    const zoom = Math.min(win.innerWidth / width, win.innerHeight / height);
-    doc.body.style.zoom = zoom;
-    last = `${width}|${height}|${win.innerWidth}|${win.innerHeight}`;
-  };
-  const observer = new win.ResizeObserver(() => {
-    const now = `${el.offsetWidth}|${el.offsetHeight}|${win.innerWidth}|${win.innerHeight}`;
-    if (now !== last) fit();
-  });
-  observer.observe(el);
-  win.addEventListener("resize", fit);
-  fit();
+  let observer = null;
+  if (!fill) {
+    // `zoom` scales every pixel of the card (fixed gaps included), so it can be fitted to any window size.
+    let last = "";
+    const fit = () => {
+      doc.body.style.zoom = 1;
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+      if (!width || !height) return;
+      const zoom = Math.min(win.innerWidth / width, win.innerHeight / height);
+      doc.body.style.zoom = zoom;
+      last = `${width}|${height}|${win.innerWidth}|${win.innerHeight}`;
+    };
+    observer = new win.ResizeObserver(() => {
+      const now = `${el.offsetWidth}|${el.offsetHeight}|${win.innerWidth}|${win.innerHeight}`;
+      if (now !== last) fit();
+    });
+    observer.observe(el);
+    win.addEventListener("resize", fit);
+    fit();
+  }
 
   const closeWithMain = () => win.close();
   window.addEventListener("beforeunload", closeWithMain);
 
   win.addEventListener("pagehide", () => {
-    observer.disconnect();
+    observer?.disconnect();
     window.removeEventListener("beforeunload", closeWithMain);
     windows.delete(el);
     rememberWindow(key, win);

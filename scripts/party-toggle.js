@@ -1,8 +1,9 @@
 const MODULE_ID = "clustersomnia";
 
-// Two buttons in the scene controls (left column): one shows or hides the floating party stack (the multiple
-// tracker), the other the personal card (the single one). Each is the same per-client setting that the module
-// settings expose, so the button and the setting always agree.
+// Four buttons in the scene controls (left column): one shows or hides the floating party stack (the multiple
+// tracker), one the personal card (the single one), one the rules quickref window (quickref.js), one the party
+// inventory (party-inventory.js). Each is the same
+// per-client setting that the module settings expose, so the button and the setting always agree.
 const TOGGLES = [
   {
     setting: "unionShow",
@@ -17,6 +18,20 @@ const TOGGLES = [
     icon: "fa-solid fa-user",
     on: "Card personale: nascondi",
     off: "Card personale: mostra"
+  },
+  {
+    setting: "quickrefShow",
+    id: "clustersomnia-quickref-toggle",
+    icon: "fa-solid fa-book-open",
+    on: "Quickref regole: nascondi",
+    off: "Quickref regole: mostra"
+  },
+  {
+    setting: "inventoryShow",
+    id: "clustersomnia-inventory-toggle",
+    icon: "fa-solid fa-box-open",
+    on: "Inventario di gruppo: nascondi",
+    off: "Inventario di gruppo: mostra"
   }
 ];
 
@@ -47,11 +62,17 @@ Hooks.on("renderSceneControls", (app, html) => {
   }
 });
 
-// Changing either from the module settings updates its button too.
-Hooks.on("clientSettingChanged", key => {
+// Anything else that changes a setting (the X on a window, the module settings) updates its button too. Foundry v12
+// has no hook for client settings, only each setting's own `onChange`, so the repaint is chained onto that.
+Hooks.once("ready", () => {
   for (const toggle of TOGGLES) {
-    if (key !== `${MODULE_ID}.${toggle.setting}`) continue;
-    const button = document.querySelector(`#controls .${toggle.id}`);
-    if (button) paint(button, toggle);
+    const setting = game.settings.settings.get(`${MODULE_ID}.${toggle.setting}`);
+    if (!setting) continue;
+    const onChange = setting.onChange;
+    setting.onChange = (...args) => {
+      onChange?.(...args);
+      const button = document.querySelector(`#controls .${toggle.id}`);
+      if (button) paint(button, toggle);
+    };
   }
 });

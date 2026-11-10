@@ -37,7 +37,7 @@ Hooks.once("ready", () => {
   mountPartyCards(host, "unionMineScale", {
     extras: true,
     pick: mine,
-    floating: { positionSetting: "unionMinePosition" },
+    floating: { positionSetting: "unionMinePosition", showSetting: "unionShowMine" },
     onFilled: place
   });
 });
