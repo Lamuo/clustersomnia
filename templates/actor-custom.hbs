@@ -1,0 +1,58 @@
+<div class="clustersomnia-custom">
+  <section>
+    <div class="sotdl-section-header">Specializzazioni (anche più di una)</div>
+    <div class="cc-specs">
+      {{#each specializations as |spec|}}
+      <button type="button" class="cc-spec{{#if spec.on}} on{{/if}}" style="--spec-color: {{spec.css}}" data-action="toggleSpec" data-id="{{spec.id}}" title="{{spec.title}}">
+        <i class="{{spec.icon}}"></i><span>{{spec.short}}</span>
+      </button>
+      {{/each}}
+    </div>
+    {{#if isGM}}
+    <details class="cc-library">
+      <summary>Libreria (GM)</summary>
+      <ul>
+        {{#each library as |spec|}}
+        <li>
+          <i class="{{spec.icon}}" style="color: {{spec.css}}"></i>
+          <span class="cc-library-name" title="{{spec.effect}}">{{spec.name}}</span>
+          <button type="button" data-action="libraryEdit" data-id="{{spec.id}}" title="Modifica"><i class="fas fa-pen"></i></button>
+          <button type="button" data-action="libraryRemove" data-id="{{spec.id}}" title="Elimina"><i class="fas fa-trash"></i></button>
+        </li>
+        {{/each}}
+      </ul>
+      <button type="button" data-action="libraryAdd"><i class="fas fa-plus"></i> Nuova specializzazione</button>
+    </details>
+    {{/if}}
+  </section>
+
+  <section>
+    <div class="sotdl-section-header">Firma</div>
+    <div class="cc-signature">
+      <input type="text" data-signature-field="name" value="{{signature.name}}" placeholder="Nome (appare al passaggio del mouse)">
+      <input type="text" data-signature-field="icon" value="{{signature.icon}}" placeholder="Icona FontAwesome, es. fa-solid fa-umbrella">
+      <div class="cc-signature-image">
+        <button type="button" data-action="signatureImage" title="Scegli un'immagine (vince sull'icona)">
+          {{#if signature.image}}<img src="{{signature.image}}">{{else}}<i class="fas fa-image"></i>{{/if}} Immagine
+        </button>
+        <button type="button" data-action="signatureClear" title="Toglie la firma"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sotdl-section-header">Tag (clic sinistro +1 bonus, destro +1 penalità)</div>
+    <div class="sotdl-tag-buttons">
+      {{#each tags as |tag|}}
+      <button type="button" class="sotdl-tag-button{{#if tag.up}} up{{/if}}{{#if tag.down}} down{{/if}} tier-{{tag.tier}}" data-action="tagStep" data-tag-id="{{tag.id}}" title="{{tag.name}}">
+        {{tag.label}}{{#if tag.glyphs}} {{tag.glyphs}}{{/if}}
+      </button>
+      {{/each}}
+    </div>
+  </section>
+
+  <section class="cc-links">
+    <button type="button" data-action="openTracker"><i class="fas fa-heartbeat"></i> Contatori e PV{{#if counters}} ({{counters}}){{/if}}</button>
+    <button type="button" data-action="openEffects"><i class="fas fa-gear"></i> Effetti mostrati</button>
+  </section>
+</div>

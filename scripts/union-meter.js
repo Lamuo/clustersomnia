@@ -1126,6 +1126,8 @@ function updateCastings(row, actor) {
 function updateSpecialization(row, actor) {
   const element = row.querySelector(".cu-spec");
   if (!element) return;
+  // Always the original one, from the highest attribute, even when the PG was given more in the actor panel:
+  // the bars show a single specialization.
   const specialization = specializationOf(actor);
   element.hidden = !specialization;
   if (!specialization) return;

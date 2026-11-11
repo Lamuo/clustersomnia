@@ -1,17 +1,7 @@
 import { EffectsConfigApp } from "./effects-config-app.js";
 import { tempHp, setTempHp } from "./temp-hp.js";
 import { persistenceActor, displayedEffects, realActor } from "./persistence.js";
-import { TAG_CATEGORIES, MAX_STEPS, automaticTags, levelOf, manualTags } from "./tags.js";
-
-// What a tag button or a "from effects" item shows: arrows by direction and the colour tier of its steps.
-function tagDisplay(signed) {
-  if (!signed) return { steps: 0, up: false, down: false, tier: 0, glyphs: "" };
-  const { tier, arrows, special } = levelOf(Math.abs(signed));
-  const up = signed > 0;
-  // The special last step has no arrows: a star for a buff, a cross for a debuff.
-  const glyphs = special ? (up ? "★" : "✖") : (up ? "▲" : "▼").repeat(arrows);
-  return { steps: Math.abs(signed), up, down: !up, tier, glyphs };
-}
+import { TAG_CATEGORIES, automaticTags, manualTags, tagDisplay, stepManualTag } from "./tags.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -232,12 +222,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   _stepTag(id, delta) {
-    const current = manualTags(this.actor)[id] ?? 0;
-    const next = Math.max(-MAX_STEPS, Math.min(MAX_STEPS, current + delta));
-    if (next === current) return;
-    // "-=" is how a key is deleted from an object flag; setFlag would only merge.
-    const path = `flags.${FLAG_NAMESPACE}.tags.${next ? id : `-=${id}`}`;
-    return persistenceActor(this.actor).update({ [path]: next || null });
+    return stepManualTag(this.actor, id, delta);
   }
 
   static #onCounterRemove(_event, target) {

@@ -86,13 +86,105 @@ function directionOf(change, actor) {
   return String(change.value ?? "").trim().startsWith("-") ? "down" : "up";
 }
 
-// A PG's specialization is named after its highest attribute (Perception does not take part).
+// A PG's specialization is named after its highest attribute (Perception does not take part). These four are the
+// "base" ones; `id` is the attribute, which is what the actor flag stores.
 export const SPECIALIZATIONS = [
-  { attribute: "strength", name: "Vigoroso", short: "Vig", stat: "Forza", icon: "fa-solid fa-dumbbell" },
-  { attribute: "agility", name: "Rapido", short: "Rap", stat: "Agilità", icon: "fa-solid fa-leaf" },
-  { attribute: "intellect", name: "Arcano", short: "Arc", stat: "Intelligenza", icon: "fa-solid fa-hat-wizard" },
-  { attribute: "will", name: "Spirituale", short: "Spi", stat: "Volontà", icon: "fa-solid fa-hands-praying" }
+  { id: "strength", attribute: "strength", name: "Vigoroso", short: "Vig", stat: "Forza", icon: "fa-solid fa-dumbbell", color: 0xe0603c },
+  { id: "agility", attribute: "agility", name: "Rapido", short: "Rap", stat: "Agilità", icon: "fa-solid fa-leaf", color: 0x5ec86a },
+  { id: "intellect", attribute: "intellect", name: "Arcano", short: "Arc", stat: "Intelligenza", icon: "fa-solid fa-hat-wizard", color: 0x8a6cf0 },
+  { id: "will", attribute: "will", name: "Spirituale", short: "Spi", stat: "Volontà", icon: "fa-solid fa-hands-praying", color: 0xf0d060 }
 ];
+
+/**
+ * The common specializations of the rulebook (regole/clustersomnia-regolamento.md, section 8): where the library
+ * starts. The GM adds, edits and removes entries from the actor panel; the list is the world setting
+ * `specializationLibrary`, so it is shared by every actor. `color` is a CSS hex string, `icon` a FontAwesome class.
+ */
+export const DEFAULT_LIBRARY = [
+  { id: "volante", name: "Volante", short: "Vol", icon: "fa-solid fa-dove", color: "#7fc8f8", effect: "Impone svantaggio ai colpi contro di lui, tranne a chi è Volante o ha Portata." },
+  { id: "nuotatore", name: "Nuotatore", short: "Nuo", icon: "fa-solid fa-fish", color: "#3aa0d8", effect: "Non ha impedimenti nelle zone d'acqua, e lì ha vantaggio ai tiri per colpire." },
+  { id: "scalatore", name: "Scalatore", short: "Sca", icon: "fa-solid fa-mountain", color: "#a8855a", effect: "Non ha impedimenti sui terreni difficili né nell'arrampicarsi." },
+  { id: "pesante", name: "Pesante", short: "Pes", icon: "fa-solid fa-weight-hanging", color: "#9a9a9a", effect: "Subisce metà dei danni, tranne quando è prono." },
+  { id: "elusivo", name: "Elusivo", short: "Elu", icon: "fa-solid fa-user-ninja", color: "#b070d8", effect: "Impone svantaggio ai colpi contro di lui, tranne a chi è Veloce o ha Portata." },
+  { id: "corazzato", name: "Corazzato", short: "Cor", icon: "fa-solid fa-shield-halved", color: "#c0c8d0", effect: "Subisce metà dei danni, tranne dalle magie." },
+  { id: "magimmunita", name: "Magimmunità", short: "Mim", icon: "fa-solid fa-ban", color: "#e060c0", effect: "Subisce metà dei danni, tranne dagli attacchi fisici." },
+  { id: "resiliente", name: "Resiliente", short: "Res", icon: "fa-solid fa-heart", color: "#e05060", effect: "Subisce metà dei danni, tranne dalle Abilità Unione." },
+  { id: "veloce", name: "Veloce", short: "Vel", icon: "fa-solid fa-bolt", color: "#f0e040", effect: "Chi ha Velocità 14 o più è Veloce. Con un movimento può spostarsi di due zone invece di una, ma non due volte di seguito." },
+  { id: "portata", name: "Portata", short: "Por", icon: "fa-solid fa-crosshairs", color: "#f09040", effect: "Ottiene un bonus di Precisione che dipende dalla portata dell'arma o dei suoi attacchi. In certe condizioni può colpire le zone adiacenti." }
+];
+
+export const SPECIALIZATION_LIBRARY_SETTING = "specializationLibrary";
+
+const cssToNumber = color => {
+  const value = parseInt(String(color ?? "").replace("#", ""), 16);
+  return Number.isFinite(value) ? value : 0xcccccc;
+};
+export const numberToCss = color => `#${Number(color).toString(16).padStart(6, "0")}`;
+
+/** The library as saved in the world (the defaults until the setting exists), with the colour as a number. */
+export function libraryOf() {
+  let saved;
+  try { saved = game.settings.get(FLAG_NAMESPACE, SPECIALIZATION_LIBRARY_SETTING); } catch (_error) { saved = null; }
+  const list = Array.isArray(saved) ? saved : DEFAULT_LIBRARY;
+  return list.filter(entry => entry?.id && entry.name).map(entry => ({ ...entry, color: cssToNumber(entry.color) }));
+}
+
+/** The four base specializations followed by the library: everything an actor can be given. */
+export function allSpecializations() {
+  return [...SPECIALIZATIONS, ...libraryOf()];
+}
+
+/** The FontAwesome code point of an icon class, read from the stylesheet (the token badge draws it as text). */
+const glyphs = new Map();
+export function glyphOf(icon) {
+  if (glyphs.has(icon)) return glyphs.get(icon);
+  const element = document.createElement("i");
+  element.className = /\bfa-(solid|regular|light|thin|brands)\b/.test(icon) ? icon : `fa-solid ${icon}`;
+  element.style.cssText = "position:absolute;visibility:hidden";
+  document.body.append(element);
+  const content = getComputedStyle(element, "::before").content;
+  element.remove();
+  const glyph = content && content !== "none" && content !== "normal" ? content.replace(/^["']|["']$/g, "") : "";
+  if (glyph) glyphs.set(icon, glyph);
+  return glyph;
+}
+
+/** The flag with the specializations chosen by hand: an array of ids (`["strength", "volante"]`). */
+export const SPECIALIZATIONS_FLAG = "specializations";
+
+/**
+ * Every specialization of an actor. When the flag is set it is the whole answer, even if empty (a monster with none).
+ * Without it, `auto` falls back to the single highest-attribute rule of `specializationOf`, which is what the party
+ * cards want for a PG; the tokens pass `auto: false` so a monster only shows what was assigned. An id that is no
+ * longer in the library is skipped.
+ */
+export function specializationsOf(actor, { auto = true } = {}) {
+  const chosen = persistenceActor(actor).getFlag(FLAG_NAMESPACE, SPECIALIZATIONS_FLAG);
+  if (Array.isArray(chosen)) return allSpecializations().filter(entry => chosen.includes(entry.id));
+  if (!auto) return [];
+  const automatic = specializationOf(actor);
+  return automatic ? [automatic] : [];
+}
+
+/** What a tag button or a "from effects" item shows: arrows by direction and the colour tier of its steps. */
+export function tagDisplay(signed) {
+  if (!signed) return { steps: 0, up: false, down: false, tier: 0, glyphs: "" };
+  const { tier, arrows, special } = levelOf(Math.abs(signed));
+  const up = signed > 0;
+  // The special last step has no arrows: a star for a buff, a cross for a debuff.
+  const glyphs = special ? (up ? "★" : "✖") : (up ? "▲" : "▼").repeat(arrows);
+  return { steps: Math.abs(signed), up, down: !up, tier, glyphs };
+}
+
+/** Adds `delta` steps to a manual tag (buff positive, debuff negative), kept on the world actor. */
+export function stepManualTag(actor, id, delta) {
+  const current = manualTags(actor)[id] ?? 0;
+  const next = Math.max(-MAX_STEPS, Math.min(MAX_STEPS, current + delta));
+  if (next === current) return;
+  // "-=" is how a key is deleted from an object flag; setFlag would only merge.
+  const path = `flags.${FLAG_NAMESPACE}.tags.${next ? id : `-=${id}`}`;
+  return persistenceActor(actor).update({ [path]: next || null });
+}
 
 /**
  * The specialization of an actor: the attribute with the highest current value, or `null`. A PG has only one, so

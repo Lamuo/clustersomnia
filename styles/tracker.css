@@ -544,3 +544,111 @@
   margin-left: 0;
   margin-right: 3px;
 }
+
+/* ---- Panel "Custom" of an actor (scripts/actor-custom-app.js) ---- */
+.clustersomnia-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px;
+}
+
+.clustersomnia-custom .cc-specs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.clustersomnia-custom .cc-spec {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: auto;
+  padding: 6px 0;
+  line-height: 1.1;
+  opacity: 0.5;
+}
+
+.clustersomnia-custom .cc-spec i {
+  font-size: 1.4em;
+  margin: 0;
+}
+
+.clustersomnia-custom .cc-spec.on {
+  opacity: 1;
+  box-shadow: 0 0 6px 1px var(--spec-color, #f0d060);
+}
+
+.clustersomnia-custom .cc-signature {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.clustersomnia-custom .cc-signature-image {
+  display: flex;
+  gap: 4px;
+}
+
+.clustersomnia-custom .cc-signature-image button:first-child {
+  flex: 1;
+}
+
+.clustersomnia-custom .cc-signature-image img {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  border: none;
+}
+
+.clustersomnia-custom .cc-links {
+  display: flex;
+  gap: 6px;
+}
+
+.clustersomnia-custom .cc-links button {
+  flex: 1;
+}
+
+.clustersomnia-custom .cc-spec i {
+  color: var(--spec-color, inherit);
+}
+
+.clustersomnia-custom .cc-library {
+  margin-top: 6px;
+}
+
+.clustersomnia-custom .cc-library ul {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0;
+}
+
+.clustersomnia-custom .cc-library li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.clustersomnia-custom .cc-library-name {
+  flex: 1;
+}
+
+.clustersomnia-custom .cc-library li button {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 22px;
+  padding: 0;
+  line-height: 1;
+}
+
+.clustersomnia-spec-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

@@ -16,6 +16,8 @@ import "./temp-hp.js";
 import "./token-bar.js";
 import "./alsa.js";
 import "./alsa-weapons.js";
+import "./actor-custom-app.js";
+import "./token-specializations.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
 const LEGACY_FLAG_NAMESPACE = "my-tracker";
