@@ -32,6 +32,13 @@ const TOGGLES = [
     icon: "fa-solid fa-box-open",
     on: "Inventario di gruppo: nascondi",
     off: "Inventario di gruppo: mostra"
+  },
+  {
+    setting: "unionRulesShow",
+    id: "clustersomnia-unionrules-toggle",
+    icon: "fa-solid fa-handshake-angle",
+    on: "Abilità Unione: nascondi",
+    off: "Abilità Unione: mostra"
   }
 ];
 

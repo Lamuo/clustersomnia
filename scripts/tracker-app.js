@@ -1,6 +1,7 @@
 import { EffectsConfigApp } from "./effects-config-app.js";
 import { tempHp, setTempHp } from "./temp-hp.js";
-import { persistenceActor, displayedEffects, realActor } from "./persistence.js";
+import { persistenceActor, displayedEffects, realActor, effectKey } from "./persistence.js";
+import { shownOnCard, toggleCardMode } from "./card-visibility.js";
 import { TAG_CATEGORIES, automaticTags, manualTags, tagDisplay, stepManualTag } from "./tags.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -34,7 +35,8 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
       counterIcon: TrackerApp.#onCounterIcon,
       tagCycle: TrackerApp.#onTagCycle,
       effectToggle: TrackerApp.#onEffectToggle,
-      effectsConfig: TrackerApp.#onEffectsConfig
+      effectsConfig: TrackerApp.#onEffectsConfig,
+      cardToggle: TrackerApp.#onCardToggle
     }
   };
 
@@ -77,6 +79,21 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }));
   }
 
+  // The small "on the cards" zone: every element the party cards can show, with where it goes (simple / advanced).
+  get cardRows() {
+    const row = (key, name, extra = {}) => ({
+      key, name,
+      simple: shownOnCard(this.actor, key, false),
+      advanced: shownOnCard(this.actor, key, true),
+      ...extra
+    });
+    return [
+      row("tags", game.i18n.localize("CLUSTERSOMNIA.CardTags"), { icon: "fas fa-angles-up" }),
+      ...this.counters.map(counter => row(`counter:${counter.id}`, counter.name, { img: counter.icon, icon: "fas fa-hashtag" })),
+      ...this.effects.map(effect => row(effectKey(effect), effect.name, { img: effect.img }))
+    ];
+  }
+
   _isEffectRelevant(effect) {
     return effect.parent?.id === this.actor.id || effect.parent?.actor?.id === this.actor.id;
   }
@@ -89,6 +106,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
       tempHp: tempHp(this.actor),
       counters: this.counters,
       effects: this.effects,
+      cardRows: this.cardRows,
       showTags: game.settings.get(FLAG_NAMESPACE, "trackerShowTags"),
       tags: this.tagContext,
       autoTags: automaticTags(this.actor).map((tag) => ({
@@ -181,7 +199,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static #onCounterAdd(_event, _target) {
     const counters = this.counters;
-    counters.push({ id: foundry.utils.randomID(), name: "New Counter", value: 0, max: null });
+    counters.push({ id: foundry.utils.randomID(), name: game.i18n.localize("CLUSTERSOMNIA.NewCounter"), value: 0, max: null });
     this._setCounters(counters);
   }
 
@@ -234,6 +252,10 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onEffectToggle(_event, target) {
     const effect = fromUuidSync(target.dataset.effectUuid);
     effect?.update({ disabled: !effect.disabled });
+  }
+
+  static #onCardToggle(_event, target) {
+    return toggleCardMode(this.actor, target.dataset.key, target.dataset.side);
   }
 
   static #onEffectsConfig(_event, _target) {

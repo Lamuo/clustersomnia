@@ -15,7 +15,7 @@ export class EffectsConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
     tag: "div",
     classes: ["sotdl-effects-config-app"],
     window: {
-      title: "Configure Tracked Effects",
+      title: "CLUSTERSOMNIA.EffectsConfigTitle",
       icon: "fas fa-gear",
       resizable: true
     },
@@ -36,7 +36,7 @@ export class EffectsConfigApp extends HandlebarsApplicationMixin(ApplicationV2) 
   };
 
   get title() {
-    return `Configure Tracked Effects — ${this.actor.name}`;
+    return `${game.i18n.localize("CLUSTERSOMNIA.EffectsConfigTitle")} — ${this.actor.name}`;
   }
 
   async _prepareContext(_options) {

@@ -171,6 +171,29 @@ const showQuickref = floatingWindow({
 });
 
 /* -------------------------------------------- */
+/*  Union abilities: just that block of the quickref  */
+/* -------------------------------------------- */
+
+// The same page, `only=union`: the pair picker (Vigoroso, Rapido...) and the ten abilities, nothing else.
+const showUnionRules = floatingWindow({
+  id: "clustersomnia-unionrules",
+  showSetting: "unionRulesShow",
+  boxSetting: "unionRulesBox",
+  popoutKey: "unionrules",
+  title: "Abilità Unione",
+  size: { width: 360, height: 300, minWidth: 260, minHeight: 200 },
+  corner: { right: 330, top: 160 },
+  content: `<iframe title="Abilità Unione"></iframe>`,
+  buttons: [
+    { icon: "fas fa-xmark", title: "Chiudi le abilità Unione (si riaprono dal pulsante nei controlli a sinistra)", click: () => toggle("unionRulesShow") }
+  ],
+  onShow: host => {
+    const frame = host.querySelector("iframe");
+    if (!frame.getAttribute("src")) frame.src = foundry.utils.getRoute(`${QUICKREF_FILE}?embed=1&only=union`);
+  }
+});
+
+/* -------------------------------------------- */
 /*  The manual: the rulebook markdown, rendered  */
 /* -------------------------------------------- */
 
@@ -309,12 +332,17 @@ Hooks.once("init", () => {
     hint: "Finestra flottante e trasparente con il riassunto delle regole. Si sposta dalla linguetta in alto e si stacca in una finestra a parte; da lì si apre anche il manuale completo.",
     scope: "client", config: true, type: Boolean, default: false, onChange: showQuickref
   });
+  game.settings.register(MODULE_ID, "unionRulesShow", {
+    name: "Abilità Unione: mostra la finestra",
+    hint: "Solo il blocco Unione del quickref: scegli le due Specializzazioni e vedi l'abilità, con le regole di ciascuna.",
+    scope: "client", config: true, type: Boolean, default: false, onChange: showUnionRules
+  });
   // Opened and closed from the quickref's own button.
   game.settings.register(MODULE_ID, "manualShow", {
     scope: "client", config: false, type: Boolean, default: false, onChange: showManual
   });
   // Where this client left each window and how big: { left, top, width, height }.
-  for (const key of ["quickrefBox", "manualBox"]) {
+  for (const key of ["quickrefBox", "manualBox", "unionRulesBox"]) {
     game.settings.register(MODULE_ID, key, { scope: "client", config: false, type: Object, default: {} });
   }
 });

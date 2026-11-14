@@ -1,5 +1,6 @@
 import { UnionConfigApp } from "./union-config-app.js";
-import { displayedEffects, tokenEffects } from "./persistence.js";
+import { displayedEffects, tokenEffects, effectKey } from "./persistence.js";
+import { shownOnCard } from "./card-visibility.js";
 import { tempHp } from "./temp-hp.js";
 import { popOut, closePopout } from "./popout.js";
 import { effectTags, specializationOf } from "./tags.js";
@@ -41,8 +42,8 @@ const DEFAULT_SEGMENT_COLORS = { on: "#ff7a1a", on2: "#ffd27a", off: "#120d0c", 
 
 const DETAIL_SETTINGS = {
   unionShowStats: "Party: mostra difesa, velocità, incubo, corallo bianco e rateo di cura",
-  unionShowEffects: "Card estesa: mostra gli effetti attivi",
-  unionShowCounters: "Card estesa: mostra i contatori del tracker",
+  unionShowEffects: "Card: mostra gli effetti attivi (quali e su quale card: nel Tracker)",
+  unionShowCounters: "Card: mostra i contatori del tracker (quali e su quale card: nel Tracker)",
   unionShowTags: "Party: mostra i tag degli effetti temporanei (Atk, Def...)"
 };
 
@@ -658,10 +659,10 @@ function cardsMarkup(skin, party, extras = false) {
   const expanded = expandedIds();
 
   return party.map(actor => {
-    // Effects and counters only on the personal card or on a card the portrait expanded.
+    // The advanced card: the personal one or one the portrait expanded. What each card shows is chosen per element in the Tracker (card-visibility.js).
     const full = extras || expanded.has(actor.id);
     return `
-    <div class="cu-row" data-actor-id="${actor.id}">
+    <div class="cu-row" data-actor-id="${actor.id}" data-full="${full ? 1 : 0}">
       <img class="cu-portrait" src="${actor.img}" draggable="false">
       <div class="cu-injured"></div>
       <div class="cu-status"></div>
@@ -698,7 +699,7 @@ function cardsMarkup(skin, party, extras = false) {
         <div class="cu-partners"></div>
       </div>
       ${wantTags ? `<div class="cu-tags"></div>` : ""}
-      ${full && (wantEffects || wantCounters) ? `<div class="cu-extras"></div>` : ""}
+      ${wantEffects || wantCounters ? `<div class="cu-extras"></div>` : ""}
       </div>
     </div>`;
   }).join("");
@@ -1197,7 +1198,8 @@ const TAGS_PER_ROW = 7;
 function updateTags(row, actor) {
   const container = row.querySelector(".cu-tags");
   if (!container) return;
-  const tags = effectTags(actor);
+  // Chosen in the Tracker: tags on the simple card, the advanced one, both or neither.
+  const tags = shownOnCard(actor, "tags", row.dataset.full === "1") ? effectTags(actor) : [];
   const chips = tags.slice(0, MAX_TAGS).map(tag => {
     const chip = document.createElement("span");
     chip.className = `cu-tag ${tag.dir} tier-${tag.tier}${tag.special ? " special" : ""}`;
@@ -1280,9 +1282,10 @@ function updateStatus(row, actor) {
 function updateExtras(row, actor) {
   const container = row.querySelector(".cu-extras");
   if (!container) return;
+  const advanced = row.dataset.full === "1";
   const children = [];
   if (game.settings.get(MODULE_ID, "unionShowEffects")) {
-    const active = displayedEffects(actor).filter(effect => !effect.disabled);
+    const active = displayedEffects(actor).filter(effect => !effect.disabled && shownOnCard(actor, effectKey(effect), advanced));
     for (const effect of active.slice(0, MAX_EFFECT_ICONS)) {
       const icon = document.createElement("img");
       icon.className = "cu-effect";
@@ -1305,6 +1308,7 @@ function updateExtras(row, actor) {
     // Every counter is an icon with its current value in a badge on the corner (the total stays in the Tracker).
     // Without an icon the box shows the initials of the name, so counters remain tell-apart-able.
     for (const counter of actor.getFlag(MODULE_ID, "counters") ?? []) {
+      if (!shownOnCard(actor, `counter:${counter.id}`, advanced)) continue;
       const wrap = document.createElement("span");
       wrap.className = "cu-counter-icon";
       wrap.classList.toggle("empty", !counter.value);

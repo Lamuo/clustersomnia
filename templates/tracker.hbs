@@ -1,6 +1,6 @@
-<div class="sotdl-tracker">
+<div class="sotdl-tracker" data-tab="tracker">
   <section class="sotdl-tracker-hp">
-    <label>PV</label>
+    <label>{{localize "CLUSTERSOMNIA.HpShort"}}</label>
     <div class="sotdl-tracker-hp-controls">
       <button type="button" data-action="hpDelta" data-delta="-1">−1</button>
       <span class="sotdl-tracker-hp-value">{{health.value}} / {{health.max}}</span>
@@ -21,7 +21,7 @@
     <ul class="sotdl-counter-list">
       {{#each counters as |counter|}}
       <li class="sotdl-counter-row" data-counter-row data-counter-id="{{counter.id}}">
-        <button type="button" class="sotdl-counter-icon" data-action="counterIcon" data-counter-id="{{counter.id}}" title="Scegli l'icona (clic destro: toglie)">
+        <button type="button" class="sotdl-counter-icon" data-action="counterIcon" data-counter-id="{{counter.id}}" title="{{localize "CLUSTERSOMNIA.CounterIconHint"}}">
           {{#if counter.icon}}<img src="{{counter.icon}}">{{else}}<i class="fas fa-image"></i>{{/if}}
         </button>
         <input type="text" class="sotdl-counter-name" value="{{counter.name}}">
@@ -32,27 +32,27 @@
           <input type="number" class="sotdl-counter-max" value="{{counter.max}}" placeholder="∞">
         </div>
         <button type="button" class="sotdl-counter-delta" data-action="counterDelta" data-counter-id="{{counter.id}}" data-delta="1">+</button>
-        <button type="button" class="sotdl-counter-remove" data-action="counterRemove" data-counter-id="{{counter.id}}" title="Remove counter">
+        <button type="button" class="sotdl-counter-remove" data-action="counterRemove" data-counter-id="{{counter.id}}" title="{{localize "CLUSTERSOMNIA.RemoveCounter"}}">
           <i class="fas fa-trash"></i>
         </button>
       </li>
       {{/each}}
     </ul>
-    <button type="button" data-action="counterAdd">+ Add Counter</button>
+    <button type="button" data-action="counterAdd">{{localize "CLUSTERSOMNIA.AddCounter"}}</button>
   </section>
 
   {{#if showTags}}
   <section class="sotdl-tracker-tags">
-    <div class="sotdl-section-header">Tag (ogni effetto attivo conta da solo; qui aggiungi a mano)</div>
+    <div class="sotdl-section-header">{{localize "CLUSTERSOMNIA.TagsHeader"}}</div>
     <div class="sotdl-tag-buttons">
       {{#each tags as |tag|}}
-      <button type="button" class="sotdl-tag-button{{#if tag.up}} up{{/if}}{{#if tag.down}} down{{/if}} tier-{{tag.tier}}" data-action="tagCycle" data-tag-id="{{tag.id}}" title="{{tag.name}}: clic sinistro +1 bonus, clic destro +1 penalità">
+      <button type="button" class="sotdl-tag-button{{#if tag.up}} up{{/if}}{{#if tag.down}} down{{/if}} tier-{{tag.tier}}" data-action="tagCycle" data-tag-id="{{tag.id}}" title="{{tag.name}}: {{localize "CLUSTERSOMNIA.TagButtonHint"}}">
         {{tag.label}}{{#if tag.glyphs}} {{tag.glyphs}}{{/if}}
       </button>
       {{/each}}
     </div>
     {{#if autoTags.length}}
-    <div class="sotdl-tag-auto">Dagli effetti:
+    <div class="sotdl-tag-auto">{{localize "CLUSTERSOMNIA.TagsFromEffects"}}
       {{#each autoTags as |tag|}}<span class="sotdl-tag-auto-item {{#if tag.up}}up{{else}}down{{/if}} tier-{{tag.tier}}" title="{{tag.sources}}">{{tag.label}} {{tag.glyphs}}</span> {{/each}}
     </div>
     {{/if}}
@@ -61,19 +61,36 @@
 
   <section class="sotdl-tracker-effects">
     <div class="sotdl-section-header">
-      <button type="button" class="sotdl-effects-config" data-action="effectsConfig" title="Configure tracked effects">
-        Search Effects
+      <button type="button" class="sotdl-effects-config" data-action="effectsConfig" title="{{localize "CLUSTERSOMNIA.SearchEffectsHint"}}">
+        {{localize "CLUSTERSOMNIA.SearchEffects"}}
       </button>
     </div>
     <ul class="sotdl-effect-list">
       {{#each effects as |effect|}}
       <li class="sotdl-effect-row" data-effect-uuid="{{effect.uuid}}">
-        <button type="button" class="sotdl-effect-toggle{{#if effect.disabled}} sotdl-effect-disabled{{/if}}" data-action="effectToggle" data-effect-uuid="{{effect.uuid}}" title="Toggle effect">
+        <button type="button" class="sotdl-effect-toggle{{#if effect.disabled}} sotdl-effect-disabled{{/if}}" data-action="effectToggle" data-effect-uuid="{{effect.uuid}}" title="{{localize "CLUSTERSOMNIA.ToggleEffect"}}">
           <img class="sotdl-effect-img" src="{{effect.img}}">
           <span class="sotdl-effect-name">{{effect.name}}</span>
         </button>
       </li>
       {{/each}}
     </ul>
+  </section>
+
+  <section class="sotdl-tracker-cards">
+    <div class="sotdl-section-header" title="{{localize "CLUSTERSOMNIA.CardZoneHint"}}">{{localize "CLUSTERSOMNIA.CardZone"}}</div>
+    <div class="sotdl-card-grid">
+      <span></span>
+      <span class="sotdl-card-col" title="{{localize "CLUSTERSOMNIA.CardSimpleHint"}}">{{localize "CLUSTERSOMNIA.CardSimple"}}</span>
+      <span class="sotdl-card-col" title="{{localize "CLUSTERSOMNIA.CardAdvancedHint"}}">{{localize "CLUSTERSOMNIA.CardAdvanced"}}</span>
+      {{#each cardRows as |item|}}
+      <span class="sotdl-card-name">
+        {{#if item.img}}<img src="{{item.img}}">{{else}}<i class="{{item.icon}}"></i>{{/if}}
+        <span>{{item.name}}</span>
+      </span>
+      <button type="button" class="sotdl-card-toggle{{#if item.simple}} on{{/if}}" data-action="cardToggle" data-key="{{item.key}}" data-side="s" aria-pressed="{{item.simple}}"></button>
+      <button type="button" class="sotdl-card-toggle{{#if item.advanced}} on{{/if}}" data-action="cardToggle" data-key="{{item.key}}" data-side="a" aria-pressed="{{item.advanced}}"></button>
+      {{/each}}
+    </div>
   </section>
 </div>

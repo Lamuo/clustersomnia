@@ -18,6 +18,8 @@
   if (/[?&]embed=1/.test(location.search)){
     document.documentElement.className = 'embed';
     document.documentElement.setAttribute('data-theme', 'dark');
+    /* ?only=union: solo il blocco Unione (selettore + abilità), per la finestra dedicata di Foundry. */
+    if (/[?&]only=union/.test(location.search)) document.documentElement.className += ' only-union';
   }
 </script>
 <style>
@@ -193,7 +195,10 @@
   .embed #pickResult{text-shadow:0 1px 2px #000, 0 0 6px #000;}
   .embed #pickResult a{color:#fff;}
 
-  @media (max-width:480px){
+  .only-union .search,.only-union .tabs,.only-union #version{display:none;}
+  .only-union fieldset:not(:has(.union-pick)){display:none;}
+  .only-union fieldset:has(.union-pick) > .index,
+  .only-union .group > .index{display:none;}  @media (max-width:480px){
     .modal-dialog{margin:0 .5em; padding:1em;}
     h1{font-size:1.5rem;}
   }
@@ -1887,6 +1892,7 @@
   var toggle = document.getElementById('themeToggle');
   var STORE_KEY = 'sotdl-quickref-theme';
   var EMBED = root.classList.contains('embed');
+  var ONLY_UNION = root.classList.contains('only-union');
 
   function systemPrefersLight(){
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -1924,7 +1930,8 @@
       document.getElementById('tab-' + t).hidden = t !== name;
       document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === name);
     });
-    try{ localStorage.setItem(TAB_KEY, name); }catch(e){}
+    /* la finestra "solo Unione" non tocca la scheda ricordata dal quickref (stesso localStorage) */
+    if (!ONLY_UNION) try{ localStorage.setItem(TAB_KEY, name); }catch(e){}
   }
 
   var initialTab = 'base';
@@ -1932,7 +1939,7 @@
     var storedTab = localStorage.getItem(TAB_KEY);
     if (TABS.indexOf(storedTab) >= 0) initialTab = storedTab;
   }catch(e){}
-  showTab(initialTab);
+  showTab(ONLY_UNION ? 'aggiunte' : initialTab);
 
   /* ---- Popup: Esc chiude, il tasto indietro chiude invece di riaprire le voci viste ---- */
   var pushed = false;

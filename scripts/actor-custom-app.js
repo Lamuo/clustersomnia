@@ -1,27 +1,25 @@
-import { EffectsConfigApp } from "./effects-config-app.js";
 import { TrackerApp } from "./tracker-app.js";
 import { persistenceActor } from "./persistence.js";
 import { refreshTokenSpecializations } from "./token-specializations.js";
 import { refreshPartyCards } from "./union-meter.js";
 import {
-  DEFAULT_LIBRARY, SPECIALIZATIONS_FLAG, SPECIALIZATION_LIBRARY_SETTING, TAG_CATEGORIES,
-  allSpecializations, libraryOf, manualTags, numberToCss, specializationsOf, stepManualTag, tagDisplay
+  DEFAULT_LIBRARY, SPECIALIZATIONS_FLAG, SPECIALIZATION_LIBRARY_SETTING,
+  allSpecializations, libraryOf, numberToCss, specializationsOf, stepManualTag
 } from "./tags.js";
-
-const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const MODULE_ID = "clustersomnia";
 
 /**
- * One compact panel with everything custom an actor carries: specializations, signature emblem, manual tags, and
- * doors to the counters (Tracker) and the displayed effects. Opened from a button in the title bar of any actor sheet
- * (monsters included) and from the Token HUD. Everything is stored on the world actor (`persistenceActor`), so the
- * choices are shared by all the tokens of a monster and survive an unlinked token being deleted.
+ * The actor's panel, two tabs: the Tracker (HP, counters, effects; first) and Custom (specializations, signature
+ * emblem, manual tags). Opened from a button in the title bar of any actor sheet (monsters included) and from the
+ * Token HUD. It extends TrackerApp, so the Tracker tab's actions, hooks and handlers are inherited untouched.
+ * Everything is stored on the world actor (`persistenceActor`), so the choices are shared by all the tokens of a
+ * monster and survive an unlinked token being deleted.
  */
-export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
+export class ActorCustomApp extends TrackerApp {
   constructor(actor, options = {}) {
-    super({ id: ActorCustomApp.idFor(actor), ...options });
-    this.actor = actor;
+    super(actor, { id: ActorCustomApp.idFor(actor), ...options });
+    this._tab = "tracker";
   }
 
   static idFor(actor) {
@@ -38,36 +36,37 @@ export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     tag: "div",
     classes: ["clustersomnia-custom-app"],
-    window: { title: "Custom", icon: "fas fa-wand-magic-sparkles", resizable: true },
-    position: { width: 340, height: "auto" },
+    window: { title: "CLUSTERSOMNIA.Tracker", icon: "fas fa-wand-magic-sparkles", resizable: true },
+    position: { width: 400, height: "auto" },
     actions: {
+      switchTab: ActorCustomApp.#onSwitchTab,
       toggleSpec: ActorCustomApp.#onToggleSpec,
       libraryAdd: ActorCustomApp.#onLibraryAdd,
       libraryEdit: ActorCustomApp.#onLibraryEdit,
       libraryRemove: ActorCustomApp.#onLibraryRemove,
       tagStep: ActorCustomApp.#onTagStep,
       signatureImage: ActorCustomApp.#onSignatureImage,
-      signatureClear: ActorCustomApp.#onSignatureClear,
-      openTracker: ActorCustomApp.#onOpenTracker,
-      openEffects: ActorCustomApp.#onOpenEffects
+      signatureClear: ActorCustomApp.#onSignatureClear
     }
   };
 
   static PARTS = {
-    body: { template: "modules/clustersomnia/templates/actor-custom.hbs" }
+    nav: { template: "modules/clustersomnia/templates/actor-panel-nav.hbs" },
+    tracker: { template: "modules/clustersomnia/templates/tracker.hbs" },
+    custom: { template: "modules/clustersomnia/templates/actor-custom.hbs" }
   };
 
   get title() {
-    return `Custom — ${this.actor.name}`;
+    return this.actor.name;
   }
 
   get base() {
     return persistenceActor(this.actor);
   }
 
-  async _prepareContext(_options) {
+  async _prepareContext(options) {
+    const tracker = await super._prepareContext(options);
     const chosen = new Set(specializationsOf(this.actor, { auto: false }).map(entry => entry.id));
-    const manual = manualTags(this.actor);
     const signature = this.base.getFlag(MODULE_ID, "signature") ?? {};
     const describe = entry => ({
       ...entry,
@@ -75,44 +74,38 @@ export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
       title: entry.effect ? `${entry.name}: ${entry.effect}` : `${entry.name}${entry.stat ? ` (${entry.stat})` : ""}`,
       on: chosen.has(entry.id)
     });
+    // `tags` and the rest of the Tracker's context come from super (the Tag section shows on one tab only).
     return {
+      ...tracker,
       isGM: game.user.isGM,
       specializations: allSpecializations().map(describe),
       library: libraryOf().map(describe),
-      tags: TAG_CATEGORIES.map(category => ({
-        id: category.id, label: category.label, name: category.name, ...tagDisplay(manual[category.id] ?? 0)
-      })),
-      signature: { name: signature.name ?? "", icon: signature.icon ?? "", image: signature.image ?? "" },
-      counters: (this.base.getFlag(MODULE_ID, "counters") ?? []).length
+      signature: { name: signature.name ?? "", icon: signature.icon ?? "", image: signature.image ?? "" }
     };
   }
 
   _onRender(context, options) {
+    // The Tracker's hooks and handlers, including the right click on the tag buttons (shared by both tabs).
     super._onRender(context, options);
-
-    // Hooks are registered once per window and removed in _onClose (same pattern as the Tracker).
-    this._hooks ??= [
-      ["updateActor", Hooks.on("updateActor", actor => {
-        if (actor.id === this.actor.id || actor.id === this.base.id) this.render();
-      })]
-    ];
 
     // The text fields are saved when they lose focus.
     for (const input of this.element.querySelectorAll("[data-signature-field]")) {
       input.addEventListener("change", () => this.#saveSignature({ [input.dataset.signatureField]: input.value.trim() }));
     }
-    for (const button of this.element.querySelectorAll(".sotdl-tag-button")) {
-      button.addEventListener("contextmenu", event => {
-        event.preventDefault();
-        stepManualTag(this.actor, button.dataset.tagId, -1);
-      });
-    }
+    this.#showTab();
   }
 
-  _onClose(options) {
-    super._onClose(options);
-    for (const [name, id] of this._hooks ?? []) Hooks.off(name, id);
-    this._hooks = null;
+  #showTab() {
+    for (const el of this.element.querySelectorAll("[data-tab]")) el.hidden = el.dataset.tab !== this._tab;
+    for (const el of this.element.querySelectorAll("[data-tab-target]")) {
+      el.classList.toggle("active", el.dataset.tabTarget === this._tab);
+    }
+    this.setPosition({ height: "auto" });
+  }
+
+  static #onSwitchTab(_event, target) {
+    this._tab = target.dataset.tabTarget;
+    this.#showTab();
   }
 
   // The whole object is replaced ("==") so a cleared field really goes away instead of being merged back.
@@ -135,7 +128,7 @@ export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
   // --- The library (world setting, GM only) ---
 
   static async #onLibraryAdd(_event, _target) {
-    const entry = await askEntry({ name: "", short: "", icon: "fa-solid fa-star", color: "#cccccc", effect: "" }, "Nuova specializzazione");
+    const entry = await askEntry({ name: "", short: "", icon: "fa-solid fa-star", color: "#cccccc", effect: "" }, game.i18n.localize("CLUSTERSOMNIA.NewSpec"));
     if (!entry) return;
     const list = readLibrary();
     // The id is made from the name once and never changes, because actors store it.
@@ -148,7 +141,7 @@ export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const list = readLibrary();
     const found = list.find(e => e.id === target.dataset.id);
     if (!found) return;
-    const entry = await askEntry(found, `Modifica ${found.name}`);
+    const entry = await askEntry(found, game.i18n.format("CLUSTERSOMNIA.EditSpec", { name: found.name }));
     if (entry) await saveLibrary(list.map(e => (e.id === found.id ? { ...found, ...entry } : e)));
   }
 
@@ -157,8 +150,8 @@ export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const found = list.find(e => e.id === target.dataset.id);
     if (!found) return;
     const ok = await foundry.applications.api.DialogV2.confirm({
-      window: { title: "Elimina specializzazione" },
-      content: `<p>Eliminare <strong>${Handlebars.Utils.escapeExpression(found.name)}</strong> dalla libreria? Sparisce da tutti gli actor che la hanno.</p>`,
+      window: { title: game.i18n.localize("CLUSTERSOMNIA.DeleteSpecTitle") },
+      content: `<p>${game.i18n.format("CLUSTERSOMNIA.DeleteSpecConfirm", { name: Handlebars.Utils.escapeExpression(found.name) })}</p>`,
       rejectClose: false
     });
     if (ok) await saveLibrary(list.filter(e => e.id !== found.id));
@@ -182,13 +175,6 @@ export class ActorCustomApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.base.update({ [`flags.${MODULE_ID}.-=signature`]: null });
   }
 
-  static #onOpenTracker(_event, _target) {
-    new TrackerApp(this.actor).render(true);
-  }
-
-  static #onOpenEffects(_event, _target) {
-    new EffectsConfigApp(this.actor).render(true);
-  }
 }
 
 const slug = text => String(text).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -203,22 +189,24 @@ async function saveLibrary(list) {
   await game.settings.set(MODULE_ID, SPECIALIZATION_LIBRARY_SETTING, list);
 }
 
+const t = key => game.i18n.localize(`CLUSTERSOMNIA.${key}`);
+
 /** A small form for one library entry; resolves to its fields, or null when cancelled. */
 async function askEntry(entry, title) {
   const esc = Handlebars.Utils.escapeExpression;
   const content = `
     <div class="clustersomnia-spec-form">
-      <label>Nome <input type="text" name="name" value="${esc(entry.name)}" required></label>
-      <label>Sigla (3 lettere, sulle card) <input type="text" name="short" value="${esc(entry.short)}" maxlength="4"></label>
-      <label>Icona FontAwesome <input type="text" name="icon" value="${esc(entry.icon)}" placeholder="fa-solid fa-dove"></label>
-      <label>Colore <input type="color" name="color" value="${esc(entry.color)}"></label>
-      <label>Effetto (appare al passaggio del mouse) <textarea name="effect" rows="3">${esc(entry.effect)}</textarea></label>
+      <label>${t("SpecFormName")} <input type="text" name="name" value="${esc(entry.name)}" required></label>
+      <label>${t("SpecFormShort")} <input type="text" name="short" value="${esc(entry.short)}" maxlength="4"></label>
+      <label>${t("SpecFormIcon")} <input type="text" name="icon" value="${esc(entry.icon)}" placeholder="fa-solid fa-dove"></label>
+      <label>${t("SpecFormColor")} <input type="color" name="color" value="${esc(entry.color)}"></label>
+      <label>${t("SpecFormEffect")} <textarea name="effect" rows="3">${esc(entry.effect)}</textarea></label>
     </div>`;
   const data = await foundry.applications.api.DialogV2.prompt({
     window: { title },
     content,
     rejectClose: false,
-    ok: { label: "Salva", callback: (_event, button) => new FormDataExtended(button.form).object }
+    ok: { label: t("Save"), callback: (_event, button) => new FormDataExtended(button.form).object }
   });
   if (!data?.name?.trim()) return null;
   return {
@@ -250,7 +238,8 @@ Hooks.on("getActorSheetHeaderButtons", (sheet, buttons) => {
   if (!sheet.actor?.isOwner) return;
   buttons.unshift({
     label: "",
-    class: "clustersomnia-custom",
+    // Not "clustersomnia-custom": that class styles the panel's own content (tracker.css) and would lay the button out as a column.
+    class: "clustersomnia-custom-button",
     icon: "fas fa-wand-magic-sparkles",
     onclick: () => ActorCustomApp.open(sheet.actor)
   });
@@ -258,8 +247,8 @@ Hooks.on("getActorSheetHeaderButtons", (sheet, buttons) => {
 
 // Header buttons have no tooltip of their own.
 Hooks.on("renderActorSheet", (sheet, html) => {
-  const button = (html[0] ?? html).querySelector?.(".clustersomnia-custom");
-  if (button) button.title = "Custom: specializzazioni, firma, tag";
+  const button = (html[0] ?? html).querySelector?.(".clustersomnia-custom-button");
+  if (button) button.title = game.i18n.localize("CLUSTERSOMNIA.TrackerTooltip");
 });
 
 // The same panel from the Token HUD.
@@ -269,7 +258,7 @@ Hooks.on("renderTokenHUD", (hud, html) => {
   const root = html instanceof HTMLElement ? html : html[0];
   const button = document.createElement("div");
   button.classList.add("control-icon", "clustersomnia-custom-hud-button");
-  button.dataset.tooltip = "Custom";
+  button.dataset.tooltip = game.i18n.localize("CLUSTERSOMNIA.Tracker");
   button.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i>`;
   button.addEventListener("click", () => ActorCustomApp.open(actor));
   (root.querySelector(".col.right") ?? root.querySelector(".col.left"))?.appendChild(button);

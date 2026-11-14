@@ -702,10 +702,13 @@
   width: 44px;
   height: 16px;
   margin-bottom: 2px;
+  padding: 0;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
+  line-height: 1;
   color: #e8dcc4;
   background: rgb(21 14 13 / 0.85);
   border: 1px solid #e8dcc4;
@@ -715,6 +718,15 @@
   touch-action: none;
   pointer-events: auto;
   transition: opacity 0.15s;
+}
+
+/* Same box model for the glyph in all three tabs, so the icons sit on one centre line. */
+.cu-floating .cu-grip i,
+.cu-floating .cu-popout i,
+.cu-floating .cu-close i {
+  display: block;
+  line-height: 1;
+  margin: 0;
 }
 
 .cu-floating:hover .cu-grip,

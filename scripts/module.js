@@ -1,4 +1,3 @@
-import { TrackerApp } from "./tracker-app.js";
 import "./folder-permissions.js";
 import "./folder-relay.js";
 import "./compendium-filters.js";
@@ -17,6 +16,7 @@ import "./token-bar.js";
 import "./alsa.js";
 import "./alsa-weapons.js";
 import "./actor-custom-app.js";
+import "./attribute-pick.js";
 import "./token-specializations.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
@@ -48,20 +48,5 @@ Hooks.once("ready", async () => {
   }
 });
 
-Hooks.on("renderTokenHUD", (hud, html, _data) => {
-  const actor = hud.object?.actor;
-  if (!actor) return;
-
-  const root = html instanceof HTMLElement ? html : html[0];
-
-  const button = document.createElement("div");
-  button.classList.add("control-icon", "sotdl-tracker-hud-button");
-  button.dataset.tooltip = "Open Tracker";
-  button.innerHTML = `<img src="icons/svg/regen.svg" width="36" height="36">`;
-  button.addEventListener("click", () => {
-    new TrackerApp(actor).render(true);
-  });
-
-  const column = root.querySelector(".col.right") ?? root.querySelector(".col.left");
-  column?.appendChild(button);
-});
+// The Token HUD button for the Tracker is gone: the Tracker is the first tab of the panel opened by the Custom
+// button (actor-custom-app.js).

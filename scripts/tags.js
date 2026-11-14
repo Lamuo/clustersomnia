@@ -23,22 +23,22 @@ export const MAX_STEPS = ARROWS_PER_TIER * (MAX_TIER + 1) + 1;
 export const TAG_CATEGORIES = [
   // Attack bonuses split in two: spells go to Mag, everything else to Atk / Hit / Crit. "damage" with nothing after it
   // is a plain bonus to the damage of any attack (many talents use it), so it counts for Atk like "damage.all" does.
-  { id: "atk", label: "Atk", name: "Attacco", keys: /^system\.bonuses\.attack\.(damage($|\.(?!spell))|extraEffect)/ },
-  { id: "mag", label: "Mag", name: "Magia", keys: /^system\.bonuses\.attack\.(damage|boons)\.spell/ },
-  { id: "hit", label: "Hit", name: "Colpire", keys: /^system\.bonuses\.attack\.boons\.(?!spell)/ },
+  { id: "atk", label: "Atk", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.atk"); }, keys: /^system\.bonuses\.attack\.(damage($|\.(?!spell))|extraEffect)/ },
+  { id: "mag", label: "Mag", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.mag"); }, keys: /^system\.bonuses\.attack\.(damage|boons)\.spell/ },
+  { id: "hit", label: "Hit", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.hit"); }, keys: /^system\.bonuses\.attack\.boons\.(?!spell)/ },
   // A boon to attacks improves both the hit and the critical, so those keys feed Hit and Crit together.
-  { id: "crit", label: "Crit", name: "Critico", keys: /^system\.bonuses\.attack\.(plus20Damage|boons\.(?!spell))/ },
-  { id: "def", label: "Def", name: "Difesa", keys: /^system\.bonuses\.(armor|defense)\.|^system\.characteristics\.defense/ },
+  { id: "crit", label: "Crit", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.crit"); }, keys: /^system\.bonuses\.attack\.(plus20Damage|boons\.(?!spell))/ },
+  { id: "def", label: "Def", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.def"); }, keys: /^system\.bonuses\.(armor|defense)\.|^system\.characteristics\.defense/ },
   // The challenge boons "all" count for each of the five attributes: one such effect adds a step to Str, Agi, Int, Wil and Per.
-  { id: "str", label: "Str", name: "Forza", keys: /attributes\.strength|challenge\.boons\.(strength|all)/ },
-  { id: "agi", label: "Agi", name: "Agilità", keys: /attributes\.agility|challenge\.boons\.(agility|all)/ },
-  { id: "int", label: "Int", name: "Intelletto", keys: /attributes\.intellect|challenge\.boons\.(intellect|all)/ },
-  { id: "wil", label: "Wil", name: "Volontà", keys: /attributes\.will|challenge\.boons\.(will|all)/ },
-  { id: "per", label: "Per", name: "Percezione", keys: /attributes\.perception|challenge\.boons\.(perception|all)/ },
-  { id: "spd", label: "Spd", name: "Velocità", keys: /^system\.characteristics\.speed/ },
-  { id: "hp", label: "PV", name: "Punti ferita", keys: /^system\.characteristics\.health\.max/ },
-  { id: "pow", label: "Pow", name: "Potere", keys: /^system\.characteristics\.power/ },
-  { id: "size", label: "Size", name: "Taglia", keys: /^system\.characteristics\.size/ }
+  { id: "str", label: "Str", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.str"); }, keys: /attributes\.strength|challenge\.boons\.(strength|all)/ },
+  { id: "agi", label: "Agi", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.agi"); }, keys: /attributes\.agility|challenge\.boons\.(agility|all)/ },
+  { id: "int", label: "Int", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.int"); }, keys: /attributes\.intellect|challenge\.boons\.(intellect|all)/ },
+  { id: "wil", label: "Wil", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.wil"); }, keys: /attributes\.will|challenge\.boons\.(will|all)/ },
+  { id: "per", label: "Per", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.per"); }, keys: /attributes\.perception|challenge\.boons\.(perception|all)/ },
+  { id: "spd", label: "Spd", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.spd"); }, keys: /^system\.characteristics\.speed/ },
+  { id: "hp", label: "PV", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.hp"); }, keys: /^system\.characteristics\.health\.max/ },
+  { id: "pow", label: "Pow", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.pow"); }, keys: /^system\.characteristics\.power/ },
+  { id: "size", label: "Size", get name() { return game.i18n.localize("CLUSTERSOMNIA.TagName.size"); }, keys: /^system\.characteristics\.size/ }
 ];
 
 // `flags.sourceType` is what the system itself stamps on every effect; "permanent" is not reliable on its own
@@ -187,17 +187,32 @@ export function stepManualTag(actor, id, delta) {
 }
 
 /**
- * The specialization of an actor: the attribute with the highest current value, or `null`. A PG has only one, so
- * when several share the top the first in SPECIALIZATIONS wins (Strength, Agility, Intellect, Will). When all four
- * are equal there is no highest and the result is `null`.
+ * The attributes tied for the highest value, when there is a tie to break: two or three of Strength, Agility,
+ * Intellect, Will share the top (all four equal means no specialization at all, so nothing to choose).
  */
-export function specializationOf(actor) {
+export function tiedTopAttributes(actor) {
   const values = SPECIALIZATIONS.map(entry => ({ ...entry, value: Number(actor.system.attributes?.[entry.attribute]?.value) }))
     .filter(entry => Number.isFinite(entry.value));
-  if (!values.length) return null;
+  if (!values.length) return [];
   const top = Math.max(...values.map(entry => entry.value));
-  if (values.every(entry => entry.value === top)) return null;
-  return values.find(entry => entry.value === top);
+  if (values.every(entry => entry.value === top)) return [];
+  return values.filter(entry => entry.value === top);
+}
+
+/** Flag holding the attribute the player picked to break a tie (read only while it is still one of the tied ones). */
+export const PRIMARY_ATTRIBUTE_FLAG = "primaryAttribute";
+
+/**
+ * The specialization of an actor: the attribute with the highest current value, or `null`. A PG has only one. When
+ * several share the top, the one picked on the sheet (flag `primaryAttribute`, see attribute-pick.js) wins, else the
+ * first in SPECIALIZATIONS (Strength, Agility, Intellect, Will). When all four are equal there is no highest and the
+ * result is `null`.
+ */
+export function specializationOf(actor) {
+  const tied = tiedTopAttributes(actor);
+  if (!tied.length) return null;
+  const picked = persistenceActor(actor).getFlag(FLAG_NAMESPACE, PRIMARY_ATTRIBUTE_FLAG);
+  return tied.find(entry => entry.attribute === picked) ?? tied[0];
 }
 
 /**

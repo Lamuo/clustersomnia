@@ -182,8 +182,8 @@
   border-radius: 4px;
 }
 
-.fas.fa-trash {
-  margin-right: 0px !important;
+.sotdl-counter-remove .fa-trash {
+  margin-right: 0;
 }
 
 .sotdl-tracker-effects {
@@ -545,6 +545,28 @@
   margin-right: 3px;
 }
 
+/* ---- Tabs of the actor panel (Tracker | Custom) ---- */
+.clustersomnia-custom-app [data-tab][hidden] {
+  display: none;
+}
+
+.clustersomnia-custom-app .cc-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px 4px 0;
+}
+
+.clustersomnia-custom-app .cc-tabs button {
+  flex: 1;
+  opacity: 0.6;
+}
+
+.clustersomnia-custom-app .cc-tabs button.active {
+  opacity: 1;
+  font-weight: bold;
+  border-color: var(--color-border-highlight, #ff6400);
+}
+
 /* ---- Panel "Custom" of an actor (scripts/actor-custom-app.js) ---- */
 .clustersomnia-custom {
   display: flex;
@@ -645,10 +667,123 @@
   height: 22px;
   padding: 0;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clustersomnia-custom .cc-library li button i {
+  display: block;
+  margin: 0;
+  line-height: 1;
 }
 
 .clustersomnia-spec-form {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* ---- "On the cards" zone of the Tracker: which party-card version shows each element ---- */
+.sotdl-tracker-cards {
+  margin-top: 8px;
+}
+
+.sotdl-card-grid {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 3px 10px;
+  font-size: 12px;
+}
+
+.sotdl-card-col {
+  text-align: center;
+  opacity: 0.7;
+}
+
+.sotdl-card-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.sotdl-card-name img {
+  width: 16px;
+  height: 16px;
+  border: none;
+  flex: none;
+}
+
+.sotdl-card-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sotdl-card-toggle {
+  width: 22px;
+  height: 14px;
+  padding: 0;
+  margin: 0 auto;
+  line-height: 1;
+  border-radius: 7px;
+  border: 1px solid #888;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.sotdl-card-toggle.on {
+  background: var(--color-border-highlight, #ff6400);
+  border-color: var(--color-border-highlight, #ff6400);
+}
+
+/* ---- Tie-break dot beside a tied-highest attribute on a PG's sheet (scripts/attribute-pick.js) ---- */
+.attribute:has(> .cs-primary-dot) {
+  position: relative;
+}
+
+/* Anchored to the input circle, on the side opposite the system's modifier label. The system styles every ".on"
+   (it moves it), so the chosen state is ".chosen"; hover only changes colour and glow, never the geometry. */
+.attribute > .cs-primary-dot {
+  position: absolute;
+  top: 28px;
+  left: calc(50% - 33px);
+  z-index: 5;
+  display: block;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid rgba(250, 32, 11, 0.75);
+  background: rgba(20, 6, 6, 0.55);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+  transform: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* A wider click area than the dot itself. */
+.attribute > .cs-primary-dot::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+}
+
+.attribute > .cs-primary-dot:hover {
+  border-color: #ff4a2e;
+  background: rgba(250, 32, 11, 0.35);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 0 7px 1px rgba(250, 32, 11, 0.7);
+}
+
+.attribute > .cs-primary-dot.chosen {
+  border-color: #ff4a2e;
+  background: radial-gradient(circle at 35% 35%, #ff8a70 0%, #fa200b 55%, #a50f00 100%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 6px rgba(250, 32, 11, 0.65);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attribute > .cs-primary-dot { transition: none; }
 }
