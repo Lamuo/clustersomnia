@@ -6,13 +6,74 @@ import { glyphOf, specializationsOf } from "./tags.js";
 
 const NAME = "clustersomnia-specializations";
 
+let tip = null;
+
+function moveTip(event) {
+  if (!tip) return;
+  const x = event.clientX ?? event.global?.x ?? 0;
+  const y = event.clientY ?? event.global?.y ?? 0;
+  tip.style.left = `${Math.min(x + 14, window.innerWidth - tip.offsetWidth - 8)}px`;
+  tip.style.top = `${Math.min(y + 14, window.innerHeight - tip.offsetHeight - 8)}px`;
+}
+
+function showTip(name, text, event) {
+  hideTip();
+  tip = document.createElement("div");
+  tip.style.cssText = "position:fixed;z-index:10000;pointer-events:none;max-width:260px;padding:6px 9px;border-radius:5px;"
+    + "background:rgba(10,10,14,.94);border:1px solid #666;color:#eee;font-size:12px;line-height:1.35;box-shadow:0 2px 8px #000a;";
+  const title = document.createElement("strong");
+  title.textContent = name;
+  title.style.display = "block";
+  tip.append(title);
+  if (text) tip.append(document.createTextNode(text));
+  document.body.append(tip);
+  moveTip(event);
+}
+
+function hideTip() {
+  tip?.remove();
+  tip = null;
+}
+
+const fileOf = value => String(value ?? "").split("?")[0].split("/").pop();
+
+// Foundry draws each status as a sprite in `token.effects` (after a background Graphics) and gives it no hover. Each sprite
+// is matched to its effect by the picture; the listeners are added once per sprite and read the effect from `sprite.cuEffect`.
+function syncStatusTips(token) {
+  const effects = token.actor?.temporaryEffects ?? [];
+  const pool = [...effects];
+  for (const sprite of token.effects?.children ?? []) {
+    if (!(sprite instanceof PIXI.Sprite) || sprite.destroyed) continue;
+    const file = fileOf(sprite.texture?.baseTexture?.resource?.src ?? sprite.texture?.baseTexture?.cacheId);
+    const at = pool.findIndex(effect => fileOf(effect.img) === file);
+    const effect = at >= 0 ? pool.splice(at, 1)[0] : null;
+    sprite.cuEffect = effect;
+    if (sprite.cuTip) continue;
+    sprite.cuTip = true;
+    sprite.eventMode = "static";
+    sprite.on("pointerover", event => {
+      const current = sprite.cuEffect;
+      if (!current) return;
+      const holder = document.createElement("div");
+      holder.innerHTML = current.description ?? "";
+      showTip(current.name, holder.textContent.trim().slice(0, 300), event);
+    });
+    sprite.on("pointermove", event => moveTip(event));
+    sprite.on("pointerout", hideTip);
+    sprite.on("destroyed", hideTip);
+  }
+}
+
 function sync(token) {
+  syncStatusTips(token);
   const list = token.actor ? specializationsOf(token.actor, { auto: false }) : [];
   let box = token.children.find(child => child.name === NAME && !child.destroyed);
-  // A third of the token, narrower when there are many so the row stays inside it, never below a readable minimum.
-  const size = Math.max(18, Math.min(token.w / 3, token.w / Math.max(list.length, 1) - 2));
+  // As small as the status icons (read from one when drawn, else Foundry's own proportion), narrower if there are many.
+  const icon = token.effects?.children.find(child => child.width > 0 && !child.destroyed);
+  const base = Math.round(icon?.width || canvas.dimensions.size / 5);
+  const size = Math.max(12, Math.min(base, token.w / Math.max(list.length, 1) - 2));
   // The look of each entry is in the key, so editing an icon or a colour in the library redraws the badge.
-  const key = `${size}|${list.map(entry => `${entry.id}:${entry.icon}:${entry.color}`).join(",")}`;
+  const key = `${size}|${token.w}|${list.map(entry => `${entry.id}:${entry.icon}:${entry.color}`).join(",")}`;
   if (!list.length) {
     box?.destroy({ children: true });
     return;
@@ -22,11 +83,20 @@ function sync(token) {
   box = new PIXI.Container();
   box.name = NAME;
   box.key = key;
-  box.eventMode = "none";
+  box.eventMode = "passive";
   list.forEach((entry, index) => {
     const radius = size / 2;
     const badge = new PIXI.Container();
-    badge.position.set(radius + 2 + index * (size + 2), radius + 2);
+    // Top-right, growing leftwards: Foundry fills the status icons from the top-left corner.
+    badge.position.set(token.w - radius - 2 - index * (size + 2), radius + 2);
+    // Hover: name and short description next to the pointer.
+    badge.eventMode = "static";
+    badge.hitArea = new PIXI.Circle(0, 0, radius);
+    const text = entry.effect || (entry.stat ? `Attributo più alto: ${entry.stat}.` : "");
+    badge.on("pointerover", event => showTip(entry.name, text, event));
+    badge.on("pointermove", event => moveTip(event));
+    badge.on("pointerout", hideTip);
+    badge.on("destroyed", hideTip);
     const disc = new PIXI.Graphics();
     disc.lineStyle(Math.max(1.5, size / 10), entry.color, 1).beginFill(0x000000, 0.75).drawCircle(0, 0, radius).endFill();
     badge.addChild(disc);
@@ -39,7 +109,19 @@ function sync(token) {
         fontSize: size * 0.55,
         fill: 0xffffff
       });
-      glyph.anchor.set(0.5);
+      // The text box has line-height and descent around the glyph, so anchoring its middle leaves the drawing off centre:
+      // pivot on the middle of the ink instead (measured on a canvas), from the origin / baseline the text is laid out on.
+      const family = glyph.style.fontFamily.map(name => `"${name}"`).join(",");
+      const ctx = document.createElement("canvas").getContext("2d");
+      ctx.font = `900 ${glyph.style.fontSize}px ${family}`;
+      const ink = ctx.measureText(code);
+      const ascent = PIXI.TextMetrics.measureText(code, glyph.style).fontProperties.ascent;
+      glyph.pivot.set(
+        (ink.actualBoundingBoxRight - ink.actualBoundingBoxLeft) / 2,
+        ascent + (ink.actualBoundingBoxDescent - ink.actualBoundingBoxAscent) / 2
+      );
+      // Rasterised at several times its size so it stays sharp when the canvas is zoomed in.
+      glyph.resolution = 4;
       badge.addChild(glyph);
     }
     box.addChild(badge);

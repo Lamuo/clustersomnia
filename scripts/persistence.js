@@ -42,7 +42,14 @@ export function displayedEffects(actor) {
 /**
  * The effects a token shows as little icons over it: the temporary ones, with a duration or a status (Injured,
  * Prone...). They come and go with the token's own icons, so the cards can follow them.
+ * The cards hold the world actor, but an unlinked token keeps its statuses on its own synthetic actor: when the
+ * scene has one for this actor, its effects are the ones the token shows.
  */
 export function tokenEffects(actor) {
-  return [...(actor.temporaryEffects ?? [])].filter(effect => !effect.disabled);
+  let source = actor;
+  if (!actor.isToken) {
+    const token = canvas.tokens?.placeables.find(t => t.actor && !t.document.actorLink && t.document.actorId === actor.id);
+    if (token) source = token.actor;
+  }
+  return [...(source.temporaryEffects ?? [])].filter(effect => !effect.disabled);
 }
