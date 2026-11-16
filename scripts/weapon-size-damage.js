@@ -91,15 +91,18 @@ Hooks.once("ready", () => {
 /*  The weapon sheet                             */
 /* -------------------------------------------- */
 
+const t = key => game.i18n.localize(`CLUSTERSOMNIA.WeaponSize.${key}`);
+const esc = text => Handlebars.Utils.escapeExpression(text);
+
 function rowMarkup(row, index, editable) {
   const options = SIZES.map(size => `<option value="${size}"${size === String(row.size) ? " selected" : ""}>${size}</option>`).join("");
   // The sheet styles its rows through the group that holds them, so these borrow the damage row's group class.
   return `<div class="item-group-damage"><div class="input-group cs-size-row" data-index="${index}">
-    <span>Size</span><span class="sep"></span>
+    <span>${t("Size")}</span><span class="sep"></span>
     <select class="input-group-dropdown cs-size" ${editable ? "" : "disabled"}>${options}</select>
     <span class="sep"></span>
     <input type="text" class="input-group-textbox cs-damage" value="${Handlebars.Utils.escapeExpression(row.damage ?? "")}" placeholder="xdY+z" ${editable ? "" : "disabled"}>
-    ${editable ? `<span class="sep"></span><a class="dl-clickable cs-remove input-group-button" title="Remove"><i class="fas fa-trash"></i></a>` : ""}
+    ${editable ? `<span class="sep"></span><a class="dl-clickable cs-remove input-group-button" title="${t("Remove")}"><i class="fas fa-trash"></i></a>` : ""}
   </div></div>`;
 }
 
@@ -119,18 +122,18 @@ Hooks.on("renderDLBaseItemSheet", (sheet, html) => {
   section.className = "dl-item-section item-properties cs-damage-by-size";
   // What the rule gives for a few sizes with this weapon's damage, so the checkbox says what it will do.
   const base = damageInput.value;
-  const preview = [2, 3, 4].map(size => `Size ${size}: ${ruleDamage(base, size) ?? base}`).join(" · ");
+  const preview = [2, 3, 4].map(size => `${t("Size")} ${size}: ${ruleDamage(base, size) ?? base}`).join(" · ");
   const ruleOn = Boolean(item.getFlag(MODULE_ID, RULE_FLAG));
 
-  section.innerHTML = `<b data-tooltip="Damage used instead of the base damage, by the attacker's size when the weapon is used">Damage by size</b>
+  section.innerHTML = `<b data-tooltip="${esc(t("SectionTip"))}">${t("Section")}</b>
     <div class="dl-item-section-column">
-      <div class="item-group-damage"><div class="input-group cs-rule${ruleOn ? " on" : ""}" role="switch" aria-checked="${ruleOn}" ${editable ? `tabindex="0"` : ""} title="+1d6 for each point of Size above 1 (a 1d2–1d5 weapon becomes 1d6 at Size 2 first); flat bonuses stay; the table below wins. With this weapon: ${Handlebars.Utils.escapeExpression(preview)}">
-        <span class="cs-rule-label">Follow the size rule</span><span class="sep"></span>
+      <div class="item-group-damage"><div class="input-group cs-rule${ruleOn ? " on" : ""}" role="switch" aria-checked="${ruleOn}" ${editable ? `tabindex="0"` : ""} title="${esc(t("RuleTip"))} ${esc(t("WithThisWeapon"))} ${esc(preview)}">
+        <span class="cs-rule-label">${t("Rule")}</span><span class="sep"></span>
         <i class="cs-rule-icon fa-solid ${ruleOn ? "fa-toggle-on" : "fa-toggle-off"}"></i>
       </div></div>
       ${rows.map((row, index) => rowMarkup(row, index, editable)).join("")}
-      ${editable ? `<div class="item-group-damage"><div class="input-group cs-add" role="button" tabindex="0" title="Add a size">
-        <span class="cs-add-label">Add a size</span><span class="sep"></span>
+      ${editable ? `<div class="item-group-damage"><div class="input-group cs-add" role="button" tabindex="0" title="${t("AddSize")}">
+        <span class="cs-add-label">${t("AddSize")}</span><span class="sep"></span>
         <a class="dl-clickable input-group-button" tabindex="-1"><i class="icon-add themed-icon"></i></a>
       </div></div>` : ""}
       ${!rows.length && !editable ? `<div class="item-group-damage"><div class="input-group"><span>—</span></div></div>` : ""}

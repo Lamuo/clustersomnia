@@ -73,5 +73,13 @@
   "CLUSTERSOMNIA.TagName.spd": "Speed",
   "CLUSTERSOMNIA.TagName.hp": "Hit Points",
   "CLUSTERSOMNIA.TagName.pow": "Power",
-  "CLUSTERSOMNIA.TagName.size": "Size"
+  "CLUSTERSOMNIA.TagName.size": "Size",
+  "CLUSTERSOMNIA.WeaponSize.Section": "Damage by size",
+  "CLUSTERSOMNIA.WeaponSize.SectionTip": "Damage used instead of the base damage, by the attacker's size when the weapon is used",
+  "CLUSTERSOMNIA.WeaponSize.Rule": "Follow the size rule",
+  "CLUSTERSOMNIA.WeaponSize.RuleTip": "+1d6 for each point of Size above 1 (a 1d2–1d5 weapon becomes 1d6 at Size 2 first); flat bonuses stay; the table below wins.",
+  "CLUSTERSOMNIA.WeaponSize.WithThisWeapon": "With this weapon:",
+  "CLUSTERSOMNIA.WeaponSize.Size": "Size",
+  "CLUSTERSOMNIA.WeaponSize.AddSize": "Add a size",
+  "CLUSTERSOMNIA.WeaponSize.Remove": "Remove"
 }

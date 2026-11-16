@@ -90,5 +90,15 @@
   "CLUSTERSOMNIA.TagName.spd": "Velocità",
   "CLUSTERSOMNIA.TagName.hp": "Punti ferita",
   "CLUSTERSOMNIA.TagName.pow": "Potere",
-  "CLUSTERSOMNIA.TagName.size": "Taglia"
+  "CLUSTERSOMNIA.TagName.size": "Taglia",
+  "CLUSTERSOMNIA.WeaponSize.Section": "Danno per taglia",
+  "CLUSTERSOMNIA.WeaponSize.SectionTip": "Danno usato al posto di quello base, in base alla taglia dell'attaccante quando si usa l'arma",
+  "CLUSTERSOMNIA.WeaponSize.Rule": "Segui la regola della taglia",
+  "CLUSTERSOMNIA.WeaponSize.RuleTip": "+1d6 per ogni punto di Taglia oltre 1 (un'arma 1d2–1d5 diventa 1d6 a Taglia 2); i bonus fissi restano; la tabella qui sotto ha la precedenza.",
+  "CLUSTERSOMNIA.WeaponSize.WithThisWeapon": "Con quest'arma:",
+  "CLUSTERSOMNIA.WeaponSize.Size": "Taglia",
+  "CLUSTERSOMNIA.WeaponSize.AddSize": "Aggiungi una taglia",
+  "CLUSTERSOMNIA.WeaponSize.Remove": "Rimuovi",
+  "DL.ExtraEffect": "Effetto Extra",
+  "DL.ExtraEffect20": "Effetto Extra 20+"
 }
