@@ -160,7 +160,7 @@ export class ActorCustomApp extends TrackerApp {
   static #onTagStep(event, target) {
     // A right click is handled by its own listener (see _onRender); only the left one is this action.
     if (event.type !== "click") return;
-    return stepManualTag(this.actor, target.dataset.tagId, 1);
+    return stepManualTag(this.actor, target.dataset.tagId, 1, { button: target });
   }
 
   static #onSignatureImage(_event, _target) {

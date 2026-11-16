@@ -46,7 +46,7 @@
     <div class="sotdl-section-header">{{localize "CLUSTERSOMNIA.TagsHeaderManual"}}</div>
     <div class="sotdl-tag-buttons">
       {{#each tags as |tag|}}
-      <button type="button" class="sotdl-tag-button{{#if tag.up}} up{{/if}}{{#if tag.down}} down{{/if}} tier-{{tag.tier}}" data-action="tagCycle" data-tag-id="{{tag.id}}" title="{{tag.name}}">
+      <button type="button" class="sotdl-tag-button{{#if tag.up}} up{{/if}}{{#if tag.down}} down{{/if}} tier-{{tag.tier}}" data-action="tagStep" data-tag-id="{{tag.id}}" title="{{tag.name}}">
         {{tag.label}}{{#if tag.glyphs}} {{tag.glyphs}}{{/if}}
       </button>
       {{/each}}

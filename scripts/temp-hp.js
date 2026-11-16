@@ -3,7 +3,7 @@
 // cards (union-meter.js), in the Tracker and on token bars (token-bar.js). The table edits the number; damage taken
 // eats it first (the preUpdateActor hook below), whoever writes the damage.
 
-import { realActor } from "./persistence.js";
+import { realActor, burst } from "./persistence.js";
 
 const MODULE_ID = "clustersomnia";
 const FLAG = "tempHp";
@@ -92,4 +92,22 @@ Hooks.on("renderActorSheet", (app, html) => {
     event.stopPropagation();
     setTempHp(actor, input.value);
   });
+
+  // Left click on the title raises the temporary HP, right click lowers them (Shift: 5), like the party cards.
+  // The number changes at once and a burst of clicks is one write (same key as the Tracker's buttons).
+  const label = root.querySelector(".cs-temphp .speedtext");
+  if (actor.isOwner && label) {
+    label.style.cursor = "pointer";
+    const nudge = (event, sign) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const step = sign * (event.shiftKey ? 5 : 1);
+      burst(`temp|${shieldActor(actor).uuid}`, tempHp(actor), base => Math.max(0, base + step), {
+        paint: value => { input.value = value; },
+        write: value => setTempHp(actor, value)
+      });
+    };
+    label.addEventListener("click", event => nudge(event, 1));
+    label.addEventListener("contextmenu", event => nudge(event, -1));
+  }
 });

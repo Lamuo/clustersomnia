@@ -1,5 +1,6 @@
 import { UnionConfigApp } from "./union-config-app.js";
-import { displayedEffects, tokenEffects, effectKey } from "./persistence.js";
+import { UnionMovesApp, useUnionMove } from "./union-moves.js";
+import { displayedEffects, tokenEffects, effectKey, stepCounter, pendingBurst, counterKey } from "./persistence.js";
 import { shownOnCard } from "./card-visibility.js";
 import { tempHp } from "./temp-hp.js";
 import { popOut, closePopout } from "./popout.js";
@@ -178,6 +179,17 @@ Hooks.once("init", () => {
     type: UnionConfigApp,
     restricted: true
   });
+  game.settings.register(MODULE_ID, "unionMoves", {
+    scope: "world", config: false, type: Object, default: {}
+  });
+  game.settings.registerMenu(MODULE_ID, "unionMovesConfig", {
+    name: "Mossa unione: assegna mosse",
+    label: "Assegna",
+    hint: "Assegna a ogni coppia di combattenti una mossa trascinata da un compendio: usandola dal meter finisce in chat.",
+    icon: "fas fa-wand-sparkles",
+    type: UnionMovesApp,
+    restricted: true
+  });
   game.settings.register(MODULE_ID, "unionSkin", {
     name: "Punti unione: skin",
     hint: "Skin del meter, uguale per tutti i giocatori.",
@@ -220,6 +232,12 @@ Hooks.once("init", () => {
       name, scope: "client", config: true, type: Boolean, default: true, onChange: redraw
     });
   }
+  // For machines that stutter: the class cu-lite on every host stops the looping animations and drops the shadow filters.
+  game.settings.register(MODULE_ID, "unionLiteEffects", {
+    name: "Card: effetti ridotti (per PC lenti)",
+    hint: "Ferma le animazioni e toglie ombre e aloni dalle card. Da accendere se il gioco va a scatti; vale solo per questo computer.",
+    scope: "client", config: true, type: Boolean, default: false, onChange: redraw
+  });
   // Where this client dragged the stack; empty means "use the skin's position".
   game.settings.register(MODULE_ID, "unionPosition", {
     scope: "client", config: false, type: Object, default: {}
@@ -267,6 +285,15 @@ function canEdit(user = game.user) {
  * HP edits are not routed through the GM like union points: Foundry already lets the owners of an actor
  * (and the GM) update it, so the row just checks the same permission.
  */
+/**
+ * Sets an element's Foundry tooltip. If that tooltip is open right now (the pointer is still over the element after a
+ * click), its text is replaced in place: Foundry reads data-tooltip only when the hover starts.
+ */
+function setTip(element, text) {
+  element.dataset.tooltip = text;
+  if (game.tooltip?.element === element && game.tooltip.tooltip) game.tooltip.tooltip.textContent = text;
+}
+
 function canEditHp(actor) {
   return actor.canUserModify(game.user, "update");
 }
@@ -295,6 +322,28 @@ function changeDamage(actor, delta, row) {
   // What is written is the click itself (+1 damage, -1 healing...), not the bar's numbers: the shield is taken off by the
   // actor's own hook from its real value, so a card that remembers an old shield can never overwrite it.
   writeDamage(actor, delta);
+}
+
+// Counter clicks go through stepCounter (persistence.js): the badge changes at once on every card of the PG and a burst
+// of clicks is saved as one write. Redraws show the pending value (pendingBurst) so nothing flickers back.
+const counterTip = (name, value, max) => `${name}: ${value}${max ? ` / ${max}` : ""}`;
+
+function paintCounter(actorId, counterId, value) {
+  for (const card of rowsOf(actorId)) {
+    for (const wrap of card.querySelectorAll(`.cu-counter-icon[data-counter-id="${counterId}"]`)) {
+      wrap.classList.toggle("empty", !value);
+      setTip(wrap, counterTip(wrap.dataset.counterName, value, wrap.dataset.counterMax));
+      const badge = wrap.querySelector(".cu-counter-badge");
+      if (badge) badge.textContent = value;
+    }
+  }
+}
+
+function changeCounter(actor, counterId, delta) {
+  stepCounter(actor, counterId, delta, {
+    paint: value => paintCounter(actor.id, counterId, value),
+    done: () => redrawSoon(actor.id)
+  });
 }
 
 /** Every card of an actor, wherever it is shown: the floating stack and each card host. */
@@ -616,13 +665,14 @@ function applySkinVars(el, skin) {
   }
   el.classList.toggle("editable", canEdit());
   el.classList.toggle("still-bubbles", skin.bubbleAnimation === false);
+  el.classList.toggle("cu-lite", game.settings.get(MODULE_ID, "unionLiteEffects"));
 }
 
 /** Key describing everything that changes a card's structure; values alone never need a rebuild. */
 function cardsKey(skin, party, extras = false) {
   const details = Object.keys(DETAIL_SETTINGS).map(setting => game.settings.get(MODULE_ID, setting));
   const expanded = expandedIds();
-  return [skin.folder, canEdit(), extras, ...details, ...party.map(a => `${a.id}:${a.name}:${a.img}:${canEditHp(a)}:${expanded.has(a.id)}`)].join("|");
+  return [skin.folder, canEdit(), extras, game.settings.get(MODULE_ID, "unionLiteEffects"), ...details, ...party.map(a => `${a.id}:${a.name}:${a.img}:${canEditHp(a)}:${expanded.has(a.id)}`)].join("|");
 }
 
 function buildRows(el, skin, party) {
@@ -747,6 +797,21 @@ function wireCards(root, skin, extras = false) {
     });
   }
 
+  // Counters: left click on a counter icon raises its value, right click lowers it (Shift: 5), kept within 0..max.
+  // Delegated, because the extras line is rebuilt by updateExtras.
+  root.querySelectorAll(".cu-extras").forEach(extrasLine => {
+    const nudge = (event, sign) => {
+      const wrap = event.target.closest(".cu-counter-icon[data-counter-id]");
+      if (!wrap) return;
+      event.preventDefault();
+      const actor = game.actors.get(extrasLine.closest(".cu-row").dataset.actorId);
+      if (!actor || !canEditHp(actor)) return;
+      changeCounter(actor, wrap.dataset.counterId, sign * (event.shiftKey ? 5 : 1));
+    };
+    extrasLine.addEventListener("click", event => nudge(event, 1));
+    extrasLine.addEventListener("contextmenu", event => nudge(event, -1));
+  });
+
   // "portraitControls" skins have no buttons: left click on the union bar (tiles and its icon) raises the points, right click lowers.
   // The ready partners sit beside the bar and keep their own click, so they are not part of this area.
   if (skin.portraitControls && canEdit()) {
@@ -758,7 +823,6 @@ function wireCards(root, skin, extras = false) {
         nudgePoints(row, skin, sign * (event.shiftKey ? 5 : 1));
       };
       for (const area of areas) {
-        area.dataset.tooltip = "Clic sinistro: +1 PU, destro: −1 PU (Maiusc: 5)";
         area.classList.add("adjustable");
         area.addEventListener("click", event => nudge(event, 1));
         area.addEventListener("contextmenu", event => nudge(event, -1));
@@ -973,6 +1037,8 @@ function paintPoints(row, skin, value, max) {
     meter.classList.add("pulse");
   }
   meter.dataset.value = value;
+  // Current / max on the bar and on its icon (the icon sits outside the bar but is part of the same control).
+  for (const area of [meter, row.querySelector(".cu-union-icon")]) if (area) setTip(area, `PU: ${value} / ${max}`);
 }
 
 /**
@@ -1013,7 +1079,10 @@ function updateRows(el, skin, party, only = null) {
     syncChildren(partners, party
       .filter(other => isReady(state, actor, other))
       .map(other => {
-        const icon = document.createElement("img");
+        // The slot carries the glow (see .cu-partner-slot in the stylesheet); the picture itself never repaints.
+        const slot = document.createElement("span");
+        slot.className = "cu-partner-slot";
+        const icon = slot.appendChild(document.createElement("img"));
         icon.className = "cu-partner";
         icon.src = bubbleImage(other);
         icon.draggable = false;
@@ -1021,9 +1090,13 @@ function updateRows(el, skin, party, only = null) {
         icon.dataset.tooltip = `${other.name} — mossa unione (${pairCost(actor.id, other.id)} PU)`;
         if (canEdit()) {
           icon.classList.add("clickable");
-          icon.addEventListener("click", () => requestOperation("use", { a: actor.id, b: other.id }));
+          icon.addEventListener("click", () => {
+            requestOperation("use", { a: actor.id, b: other.id });
+            // The pair's assigned move (UnionMovesApp) is played here, by the user who clicked, so it goes to chat.
+            useUnionMove(actor, other).catch(error => console.error(`${MODULE_ID} | ${error.message}`));
+          });
         }
-        return icon;
+        return slot;
       }));
   }
 }
@@ -1083,7 +1156,7 @@ function paintHp(row, damage, max, temp = tempHp(game.actors.get(row.dataset.act
     extra.textContent = `+${temp}`;
     text.append(extra);
   }
-  bar.dataset.tooltip = `${left} / ${max}` + (temp ? ` (+${temp} ${game.i18n.localize("CLUSTERSOMNIA.TempHpFull")})` : "") + (bar.querySelector(".cu-hp-bar.adjustable") ? " — clic sinistro: +1, destro: −1 (Maiusc: 5)" : "");
+  setTip(bar, `${left} / ${max}` + (temp ? ` (+${temp} ${game.i18n.localize("CLUSTERSOMNIA.TempHpFull")})` : ""));
   bar.classList.toggle("injured", max > 0 && damage >= max / 2);
   bar.classList.toggle("down", left === 0);
 }
@@ -1311,8 +1384,12 @@ function updateExtras(row, actor) {
       if (!shownOnCard(actor, `counter:${counter.id}`, advanced)) continue;
       const wrap = document.createElement("span");
       wrap.className = "cu-counter-icon";
-      wrap.classList.toggle("empty", !counter.value);
-      wrap.dataset.tooltip = `${counter.name}: ${counter.value}`;
+      const shownValue = pendingBurst(counterKey(actor, counter.id)) ?? counter.value;
+      wrap.classList.toggle("empty", !shownValue);
+      wrap.dataset.counterId = counter.id;
+      wrap.dataset.counterName = counter.name;
+      wrap.dataset.counterMax = counter.max ?? "";
+      wrap.dataset.tooltip = counterTip(counter.name, shownValue, counter.max);
       if (counter.icon) {
         const image = document.createElement("img");
         image.src = counter.icon;
@@ -1326,7 +1403,7 @@ function updateExtras(row, actor) {
       }
       const badge = document.createElement("span");
       badge.className = "cu-counter-badge";
-      badge.textContent = counter.value;
+      badge.textContent = shownValue;
       wrap.append(badge);
       children.push(wrap);
     }

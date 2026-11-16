@@ -1,4 +1,4 @@
-import { persistenceActor, displayedEffects } from "./persistence.js";
+import { persistenceActor, displayedEffects, burst } from "./persistence.js";
 
 const FLAG_NAMESPACE = "clustersomnia";
 
@@ -177,13 +177,29 @@ export function tagDisplay(signed) {
 }
 
 /** Adds `delta` steps to a manual tag (buff positive, debuff negative), kept on the world actor. */
-export function stepManualTag(actor, id, delta) {
-  const current = manualTags(actor)[id] ?? 0;
-  const next = Math.max(-MAX_STEPS, Math.min(MAX_STEPS, current + delta));
-  if (next === current) return;
-  // "-=" is how a key is deleted from an object flag; setFlag would only merge.
-  const path = `flags.${FLAG_NAMESPACE}.tags.${next ? id : `-=${id}`}`;
-  return persistenceActor(actor).update({ [path]: next || null });
+export function stepManualTag(actor, id, delta, { button } = {}) {
+  const base = persistenceActor(actor);
+  // A click burst: the button shows the result at once and one write follows (see `burst` in persistence.js).
+  burst(`tag|${base.id}|${id}`, manualTags(actor)[id] ?? 0,
+    value => Math.max(-MAX_STEPS, Math.min(MAX_STEPS, value + delta)), {
+      paint: value => button && paintTagButton(button, id, value),
+      write: next => {
+        // "-=" is how a key is deleted from an object flag; setFlag would only merge.
+        const path = `flags.${FLAG_NAMESPACE}.tags.${next ? id : `-=${id}`}`;
+        return base.update({ [path]: next || null });
+      }
+    });
+}
+
+/** What the Tracker's and the Custom panel's tag button looks like for a signed step count. */
+function paintTagButton(button, id, signed) {
+  const display = tagDisplay(signed);
+  const label = TAG_CATEGORIES.find(category => category.id === id)?.label ?? id;
+  button.className = button.className.replace(/\b(up|down|tier-\d+)\b/g, "").replace(/\s+/g, " ").trim();
+  if (display.up) button.classList.add("up");
+  if (display.down) button.classList.add("down");
+  button.classList.add(`tier-${display.tier}`);
+  button.textContent = `${label}${display.glyphs ? ` ${display.glyphs}` : ""}`;
 }
 
 /**

@@ -1,6 +1,6 @@
 import { EffectsConfigApp } from "./effects-config-app.js";
 import { tempHp, setTempHp } from "./temp-hp.js";
-import { persistenceActor, displayedEffects, realActor, effectKey } from "./persistence.js";
+import { persistenceActor, displayedEffects, realActor, effectKey, burst, pendingBurst, stepCounter, counterKey } from "./persistence.js";
 import { shownOnCard, toggleCardMode } from "./card-visibility.js";
 import { TAG_CATEGORIES, automaticTags, manualTags, tagDisplay, stepManualTag } from "./tags.js";
 
@@ -103,8 +103,11 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
       actor: this.actor,
       // The real hit points: those of the world actor for a PG, the same ones the sheet and the party cards show.
       health: realActor(this.actor).system.characteristics.health,
+      // `health.value` is the damage taken (see CLAUDE.md), so the hit points left are max - value.
+      hp: realActor(this.actor).system.characteristics.health.max - realActor(this.actor).system.characteristics.health.value,
       tempHp: tempHp(this.actor),
-      counters: this.counters,
+      // A value still waiting to be written (a click burst) is the one to show, not the saved one.
+      counters: this.counters.map((counter) => ({ ...counter, value: pendingBurst(counterKey(this.actor, counter.id)) ?? counter.value })),
       effects: this.effects,
       cardRows: this.cardRows,
       showTags: game.settings.get(FLAG_NAMESPACE, "trackerShowTags"),
@@ -154,7 +157,7 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
     for (const button of this.element.querySelectorAll(".sotdl-tag-button")) {
       button.addEventListener("contextmenu", (event) => {
         event.preventDefault();
-        this._stepTag(button.dataset.tagId, -1);
+        this._stepTag(button.dataset.tagId, -1, button);
       });
     }
     for (const input of this.element.querySelectorAll(".sotdl-counter-max")) {
@@ -186,7 +189,8 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static #onHpDelta(_event, target) {
-    const delta = Number(target.dataset.delta);
+    // The buttons change the hit points (+1 heals); the stored number is the damage, which moves the other way.
+    const delta = -Number(target.dataset.delta);
     const actor = realActor(this.actor);
     const health = actor.system.characteristics.health;
     const value = Math.min(health.max, Math.max(0, health.value + delta));
@@ -194,7 +198,12 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static #onTempDelta(_event, target) {
-    setTempHp(this.actor, tempHp(this.actor) + Number(target.dataset.delta));
+    const actor = this.actor;
+    const label = target.closest(".sotdl-tracker-hp-controls")?.querySelector(".sotdl-tracker-hp-value");
+    burst(`temp|${realActor(actor).uuid}`, tempHp(actor), (base) => Math.max(0, base + Number(target.dataset.delta)), {
+      paint: (value) => { if (label) label.textContent = value; },
+      write: (value) => setTempHp(actor, value)
+    });
   }
 
   static #onCounterAdd(_event, _target) {
@@ -205,13 +214,14 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static #onCounterDelta(_event, target) {
     const id = target.dataset.counterId;
-    const delta = Number(target.dataset.delta);
-    const counters = this.counters;
-    const counter = counters.find((c) => c.id === id);
-    if (!counter) return;
-    const max = counter.max ?? Infinity;
-    counter.value = Math.min(max, Math.max(0, counter.value + delta));
-    this._setCounters(counters);
+    const row = target.closest("[data-counter-row]");
+    // The value shows at once and a burst of clicks is one write (stepCounter); the render after it redraws the rest.
+    stepCounter(this.actor, id, Number(target.dataset.delta), {
+      paint: (value) => {
+        const label = row?.querySelector(".sotdl-counter-value");
+        if (label) label.textContent = value;
+      }
+    });
   }
 
   // Foundry's own file picker, so the icon is chosen like any other image.
@@ -236,11 +246,11 @@ export class TrackerApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onTagCycle(event, target) {
     // A right click is handled by its own listener (see _onRender); only the left one is this action.
     if (event.type !== "click") return;
-    return this._stepTag(target.dataset.tagId, 1);
+    return this._stepTag(target.dataset.tagId, 1, target);
   }
 
-  _stepTag(id, delta) {
-    return stepManualTag(this.actor, id, delta);
+  _stepTag(id, delta, button) {
+    return stepManualTag(this.actor, id, delta, { button });
   }
 
   static #onCounterRemove(_event, target) {

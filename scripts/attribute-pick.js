@@ -24,7 +24,8 @@ Hooks.on("renderActorSheet", (sheet, html) => {
     dot.setAttribute("role", "button");
     dot.className = "cs-primary-dot";
     dot.classList.toggle("chosen", entry.attribute === current);
-    dot.title = game.i18n.localize("CLUSTERSOMNIA.PrimaryAttributeHint");
+    const chosen = entry.attribute === current;
+    dot.title = game.i18n.format(chosen ? "CLUSTERSOMNIA.PrimaryAttributeActive" : "CLUSTERSOMNIA.PrimaryAttributePick", { name: entry.name });
     dot.addEventListener("click", event => {
       event.preventDefault();
       event.stopPropagation();
