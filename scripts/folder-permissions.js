@@ -70,6 +70,15 @@ function canManagePack(pack) {
   return pack instanceof CompendiumCollection && pack.testUserPermission(game.user, "OWNER");
 }
 
+/**
+ * The compendium window only accepts drops from the GM (`_canDragDrop` is `game.user.isGM`), although the server
+ * already lets a pack owner write to an unlocked pack (importing from code works for Trusted). Same rule as the
+ * menus below: pack owners may drop into an unlocked compendium.
+ */
+Compendium.prototype._canDragDrop = function () {
+  return game.user.isGM || (canManagePack(this.collection) && !this.collection.locked);
+};
+
 const origFolderContextOptions = Compendium.prototype._getFolderContextOptions;
 Compendium.prototype._getFolderContextOptions = function () {
   const options = origFolderContextOptions.call(this);

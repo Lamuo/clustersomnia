@@ -60,6 +60,33 @@ const EXECUTORS = {
     await folder.delete({ deleteSubfolders, deleteContents });
     return true;
   },
+  async createEntry({ documentType, data }, requesterId) {
+    const cls = CONFIG[documentType]?.documentClass;
+    if (!cls) throw new Error("Tipo di documento non valido");
+    const body = foundry.utils.deepClone(data);
+    delete body._id;
+    // Private to the requester and the GM, like documents a Trusted user creates directly (see folder-permissions.js).
+    body.ownership = { default: 0, [requesterId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
+    if (body.folder && !game.folders.get(body.folder)) body.folder = null;
+    const created = await cls.create(body, { fromCompendium: true });
+    return created.toObject();
+  },
+  async createFolderTree({ documentType, folders, documents }, requesterId) {
+    const cls = CONFIG[documentType]?.documentClass;
+    if (!cls) throw new Error("Tipo di documento non valido");
+    const created = [];
+    for (const data of folders) {
+      delete data.pack;
+      if (data.folder && !game.folders.get(data.folder) && !folders.some(f => f._id === data.folder)) data.folder = null;
+      const folder = await Folder.create({ ...data, type: documentType }, { keepId: true });
+      await folder.setFlag(FLAG_NAMESPACE, CREATED_BY_FLAG, requesterId);
+      created.push(folder.toObject());
+    }
+    const ownership = { default: 0, [requesterId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
+    const bodies = documents.map(data => ({ ...data, ownership }));
+    if (bodies.length) await cls.createDocuments(bodies, { keepId: true });
+    return created;
+  },
   async deleteEntry({ documentType, documentId }, requesterId) {
     const document = game.collections.get(documentType)?.get(documentId);
     if (!document) return true;
@@ -238,4 +265,72 @@ DocumentDirectory.prototype._getEntryContextOptions = function () {
     };
   }
   return options;
+};
+
+/**
+ * Dropping a compendium entry into a world directory creates a world document, which the server refuses to a
+ * Trusted user without the world's create permission (the drop used to do nothing, silently). Same relay as the
+ * folders: the active GM creates the copy, owned by the requester, and the drop goes on with that document.
+ */
+const origCreateDroppedEntry = DocumentDirectory.prototype._createDroppedEntry;
+DocumentDirectory.prototype._createDroppedEntry = async function (document, folderId) {
+  const cls = document.constructor;
+  const needsRelay = !(this.collection instanceof CompendiumCollection) && canRelay(game.user)
+    && !cls.canUserCreate(game.user);
+  if (!needsRelay) return origCreateDroppedEntry.call(this, document, folderId);
+
+  const data = document.toObject();
+  data.folder = folderId || null;
+  try {
+    const created = await requestFromGM("createEntry", { documentType: cls.documentName, data });
+    const collection = game.collections.get(cls.documentName);
+    // The GM's create reaches this client over the same socket, normally before the answer; wait a moment if not.
+    for (let i = 0; i < 20 && !collection.get(created._id); i++) await new Promise(resolve => setTimeout(resolve, 100));
+    return collection.get(created._id) ?? new cls(created);
+  } catch (err) {
+    ui.notifications.error(`${FLAG_NAMESPACE} | ${err.message}`);
+    throw err;
+  }
+};
+
+/**
+ * The Items and Actors directories only take drops from users allowed to create that document in the world
+ * (`_canDragDrop`), so for Trusted users the drop never even reached the relay above. Let them through; the GM's
+ * client does the actual creation.
+ */
+for (const cls of [ItemDirectory, ActorDirectory]) {
+  const origCanDragDrop = cls.prototype._canDragDrop;
+  cls.prototype._canDragDrop = function (selector) {
+    return origCanDragDrop.call(this, selector) || canRelay(game.user);
+  };
+}
+
+/**
+ * Same for a whole dropped folder (a compendium folder into the world directory): the stock code creates the
+ * folders and then their documents itself, which the server refuses to a Trusted user. Build the same lists, hand
+ * them to the GM, who creates everything with the requester as owner.
+ */
+const origCreateDroppedFolderContent = DocumentDirectory.prototype._createDroppedFolderContent;
+DocumentDirectory.prototype._createDroppedFolderContent = async function (folder, targetFolder) {
+  const cls = this.collection.documentClass;
+  const needsRelay = !(this.collection instanceof CompendiumCollection) && canRelay(game.user)
+    && !cls.canUserCreate(game.user);
+  if (!needsRelay) return origCreateDroppedFolderContent.call(this, folder, targetFolder);
+
+  const { foldersToCreate, documentsToCreate } = await this._organizeDroppedFoldersAndDocuments(folder, targetFolder);
+  let documents = documentsToCreate;
+  if (folder.pack) {
+    const pack = game.packs.get(folder.pack);
+    if (pack) documents = (await pack.getDocuments({ _id__in: documentsToCreate.map(d => d._id) })).map(d => d.toObject());
+  }
+  try {
+    const created = await requestFromGM("createFolderTree", {
+      documentType: cls.documentName, folders: foldersToCreate, documents
+    });
+    for (let i = 0; i < 20 && !game.folders.get(created.at(-1)?._id); i++) await new Promise(resolve => setTimeout(resolve, 100));
+    return created.map(data => game.folders.get(data._id)).filter(Boolean);
+  } catch (err) {
+    ui.notifications.error(`${FLAG_NAMESPACE} | ${err.message}`);
+    throw err;
+  }
 };
