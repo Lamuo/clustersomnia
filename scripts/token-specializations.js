@@ -1,4 +1,5 @@
 import { glyphOf, specializationsOf } from "./tags.js";
+import { statusDescription } from "./persistence.js";
 
 // The specializations of an actor drawn on its token as small round badges, in the corner like the status icons.
 // Only what was assigned by hand shows (`auto: false`): a monster's highest attribute says nothing about it.
@@ -48,29 +49,74 @@ function syncStatusTips(token) {
     const at = pool.findIndex(effect => fileOf(effect.img) === file);
     const effect = at >= 0 ? pool.splice(at, 1)[0] : null;
     sprite.cuEffect = effect;
-    if (sprite.cuTip) continue;
-    sprite.cuTip = true;
-    sprite.eventMode = "static";
-    sprite.on("pointerover", event => {
-      const current = sprite.cuEffect;
-      if (!current) return;
-      const holder = document.createElement("div");
-      holder.innerHTML = current.description ?? "";
-      showTip(current.name, holder.textContent.trim().slice(0, 300), event);
-    });
-    sprite.on("pointermove", event => moveTip(event));
-    sprite.on("pointerout", hideTip);
-    sprite.on("destroyed", hideTip);
   }
 }
 
-function sync(token) {
-  syncStatusTips(token);
-  const list = token.actor ? specializationsOf(token.actor, { auto: false }) : [];
-  let box = token.children.find(child => child.name === NAME && !child.destroyed);
+// The hover is worked out here, from the pointer over the whole canvas, and not by listeners on the sprites: a token
+// clips its children to its own rectangle when it answers the pointer, and with many statuses Foundry lays the icons out
+// beyond it, so those icons never got a hover. Cheap: it only looks at the sprites of tokens that have statuses drawn.
+let hovered = null;
+let hoverFrame = 0;
+function hoverStatus(event) {
+  if (hoverFrame) return;
+  const point = event.global.clone();
+  const client = { clientX: event.clientX, clientY: event.clientY };
+  hoverFrame = requestAnimationFrame(() => {
+    hoverFrame = 0;
+    let hit = null;
+    for (const token of canvas.tokens?.placeables ?? []) {
+      if (!token.visible) continue;
+      // The status icons and the specialization badges: anything of ours that can carry a tip.
+      const things = [...(token.effects?.children ?? []), ...(token.children.find(child => child.name === NAME)?.children ?? [])];
+      for (const thing of things) {
+        if (!(thing.cuEffect || thing.cuInfo) || thing.destroyed || !thing.visible || !thing.getBounds().contains(point.x, point.y)) continue;
+        hit = thing;
+      }
+    }
+    if (!hit) {
+      if (hovered) hideTip();
+      hovered = null;
+      return;
+    }
+    if (hit !== hovered) {
+      hovered = hit;
+      const info = hit.cuInfo ?? { name: hit.cuEffect.name, text: statusDescription(hit.cuEffect).slice(0, 300) };
+      showTip(info.name, info.text, client);
+    } else moveTip(client);
+  });
+}
+
+Hooks.on("canvasReady", () => {
+  hovered = null;
+  canvas.stage.on("pointermove", hoverStatus);
+});
+Hooks.on("canvasTearDown", () => {
+  hideTip();
+  hovered = null;
+  cancelAnimationFrame(hoverFrame);
+  hoverFrame = 0;
+});
+
+/**
+ * `refreshToken` fires many times a second while a token moves or is hovered, and nothing drawn here depends on that.
+ * What does: the token's size, its actor, and the status sprites (Foundry replaces `effects.bg` and every sprite each time
+ * it redraws them, and adds them one by one as their pictures load). When none of those changed the call ends here;
+ * `force` is for what the token cannot show by itself (the actor's flags, the library).
+ */
+function sync(token, force = false) {
   // As small as the status icons (read from one when drawn, else Foundry's own proportion), narrower if there are many.
   const icon = token.effects?.children.find(child => child.width > 0 && !child.destroyed);
   const base = Math.round(icon?.width || canvas.dimensions.size / 5);
+  const seen = token.cuSynced;
+  const mark = token.effects?.bg ?? null;
+  const count = token.effects?.children.length ?? 0;
+  if (!force && seen && seen.mark === mark && seen.count === count && seen.base === base
+    && seen.w === token.w && seen.actor === token.actor) return;
+  token.cuSynced = { mark, count, base, w: token.w, actor: token.actor };
+
+  syncStatusTips(token);
+  const list = token.actor ? specializationsOf(token.actor, { auto: false }) : [];
+  let box = token.children.find(child => child.name === NAME && !child.destroyed);
   const size = Math.max(12, Math.min(base, token.w / Math.max(list.length, 1) - 2));
   // The look of each entry is in the key, so editing an icon or a colour in the library redraws the badge.
   const key = `${size}|${token.w}|${list.map(entry => `${entry.id}:${entry.icon}:${entry.color}`).join(",")}`;
@@ -89,13 +135,9 @@ function sync(token) {
     const badge = new PIXI.Container();
     // Top-right, growing leftwards: Foundry fills the status icons from the top-left corner.
     badge.position.set(token.w - radius - 2 - index * (size + 2), radius + 2);
-    // Hover: name and short description next to the pointer.
-    badge.eventMode = "static";
-    badge.hitArea = new PIXI.Circle(0, 0, radius);
-    const text = entry.effect || (entry.stat ? `Attributo più alto: ${entry.stat}.` : "");
-    badge.on("pointerover", event => showTip(entry.name, text, event));
-    badge.on("pointermove", event => moveTip(event));
-    badge.on("pointerout", hideTip);
+    // Hover: name and short description next to the pointer, found by hoverStatus (above) from the pointer over the
+    // canvas, so it works wherever the badge lies, even past the token's own rectangle.
+    badge.cuInfo = { name: entry.name, text: entry.effect || (entry.stat ? `Attributo più alto: ${entry.stat}.` : "") };
     badge.on("destroyed", hideTip);
     const disc = new PIXI.Graphics();
     disc.lineStyle(Math.max(1.5, size / 10), entry.color, 1).beginFill(0x000000, 0.75).drawCircle(0, 0, radius).endFill();
@@ -131,15 +173,15 @@ function sync(token) {
 
 /** Redraws the badges of every token on the scene (the library changed). */
 export function refreshTokenSpecializations() {
-  for (const token of canvas.tokens?.placeables ?? []) sync(token);
+  for (const token of canvas.tokens?.placeables ?? []) sync(token, true);
 }
 
 Hooks.on("refreshToken", token => sync(token));
-Hooks.on("drawToken", token => sync(token));
+Hooks.on("drawToken", token => sync(token, true));
 
 // A change of the flag does not touch anything the token redraws on its own: ask the tokens of that actor to refresh.
 Hooks.on("updateActor", (actor, changes) => {
   if (!foundry.utils.hasProperty(changes, "flags.clustersomnia")) return;
   // Unlinked tokens read the flag from their world actor but are not that actor's active tokens: match them by base actor.
-  for (const token of canvas.tokens?.placeables ?? []) if (token.document.baseActor?.id === actor.id) sync(token);
+  for (const token of canvas.tokens?.placeables ?? []) if (token.document.baseActor?.id === actor.id) sync(token, true);
 });

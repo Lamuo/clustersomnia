@@ -787,3 +787,91 @@
 @media (prefers-reduced-motion: reduce) {
   .attribute > .cs-primary-dot { transition: none; }
 }
+
+/* Coin names on the sheet (Oro, Argento, Rame) are longer than the system's 25px title: they got under the number. */
+.demonlord .wealth .body .coins .cointitle,
+.creature .wealth .body .coins .cointitle,
+.vehicle .wealth .body .coins .cointitle {
+  width: 55px;
+  white-space: nowrap;
+}
+
+/* Chat card header (talent, spell, attack...): the system fixes it at 50px, floats the title and lets flex squeeze the
+   picture, so a long name spilled out and the image was stretched. The header now grows, the picture keeps its square
+   and has room beside the text. A talent card stacks a small label over the bold title; the roll cards keep the label
+   and the title on one line. Union moves (named "Title - 3 PU - Alsa/Diane") get the cost and the pair on a quieter
+   third line (union-moves.js). */
+.demonlord .card-header {
+  height: auto;
+  min-height: 50px;
+  align-items: center;
+  gap: 8px;
+}
+
+.demonlord .card-header .token-img {
+  flex: 0 0 40px;
+}
+
+.demonlord .card-header .token-img img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.demonlord .card-header .attackbox {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.demonlord .card-header .attackbox > .header,
+.demonlord .card-header .attackbox > .headertext {
+  display: block;
+  float: none;
+  padding: 0;
+}
+
+.demonlord .card-header .attackbox > .header {
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.7;
+}
+
+.demonlord .card-header .attackbox > .headertext {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.demonlord .card-header .attackbox .boxline {
+  align-items: baseline;
+}
+
+.demonlord .card-header .attackbox .boxline .header {
+  flex: 0 0 auto;
+  float: none;
+}
+
+.demonlord .card-header .attackbox .boxline .headertext,
+.demonlord .card-header .attackbox .boxline .targetname {
+  float: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.demonlord .card-header .headertext .cs-move-title {
+  display: block;
+}
+
+.demonlord .card-header .headertext .cs-move-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  opacity: 0.7;
+}

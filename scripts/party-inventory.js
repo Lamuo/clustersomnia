@@ -1,4 +1,5 @@
 import { floatingWindow } from "./quickref.js";
+import { burst, pendingBurst } from "./persistence.js";
 
 const MODULE_ID = "clustersomnia";
 const FLAG_NAMESPACE = "clustersomnia";
@@ -21,6 +22,26 @@ const escape = text => Handlebars.Utils.escapeExpression(text ?? "");
 const byName = (a, b) => a.name.localeCompare(b.name, game.i18n.lang, { numeric: true });
 const typeLabel = item => game.i18n.localize(CONFIG.Item.typeLabels?.[item.type] ?? item.type);
 const hasQuantity = item => item.system && "quantity" in item.system;
+
+// The party's money: not items, and always split, so it is a small section of its own. Kept in the actor flag `coins`
+// (the inventory actor is a vehicle, which has no wealth fields in the system). Order: highest first; no bits.
+const COINS = [
+  { id: "gc", label: "Oro" },
+  { id: "ss", label: "Argento" },
+  { id: "cp", label: "Rame" }
+];
+
+const coinKey = (actor, coin) => `coin|${actor.id}|${coin}`;
+const coinValue = (actor, coin) => pendingBurst(coinKey(actor, coin)) ?? (Number(actor.getFlag(FLAG_NAMESPACE, "coins")?.[coin]) || 0);
+
+/** Changes one coin by `delta` (or sets it with `absolute`): the field shows it at once, a burst of clicks is one write. */
+function changeCoin(actor, coin, { delta = 0, absolute = null }, input) {
+  burst(coinKey(actor, coin), Number(actor.getFlag(FLAG_NAMESPACE, "coins")?.[coin]) || 0,
+    base => Math.max(0, Math.round(absolute ?? base + delta)), {
+      paint: value => { if (input) input.value = value; },
+      write: value => actor.setFlag(FLAG_NAMESPACE, "coins", { ...(actor.getFlag(FLAG_NAMESPACE, "coins") ?? {}), [coin]: value })
+    });
+}
 
 /** A folder and every folder inside it. */
 function withDescendants(folders, id) {
@@ -95,6 +116,11 @@ function draw(body) {
   const actor = inventoryActor();
   const canEdit = Boolean(actor?.isOwner);
   for (const el of body.querySelectorAll(".ci-toolbar button")) el.disabled = !canEdit;
+  for (const input of body.querySelectorAll(".ci-coin input")) {
+    input.disabled = !canEdit;
+    // The field being typed in is left alone.
+    if (actor && input.ownerDocument.activeElement !== input) input.value = coinValue(actor, input.dataset.coin);
+  }
   if (!actor) {
     list.innerHTML = `<li class="ci-empty">L'inventario di gruppo non esiste ancora: si crea da solo la prima volta che il GM apre il mondo.</li>`;
     return;
@@ -296,6 +322,22 @@ function wire(body) {
     if (item) setQuantity(item, input.value);
   });
   body.querySelector(".ci-search").addEventListener("input", () => draw(body));
+  // Coins: left click on a name adds one, right click takes one (Shift: ten); the field can also be typed in.
+  const coinClick = (event, sign) => {
+    const label = event.target.closest(".ci-coin-label");
+    const actor = inventoryActor();
+    if (!label || !actor?.isOwner) return;
+    event.preventDefault();
+    const input = label.closest(".ci-coin").querySelector("input");
+    changeCoin(actor, label.dataset.coin, { delta: sign * (event.shiftKey ? 10 : 1) }, input);
+  };
+  body.addEventListener("click", event => coinClick(event, 1));
+  body.addEventListener("contextmenu", event => coinClick(event, -1));
+  body.addEventListener("change", event => {
+    const input = event.target.closest(".ci-coin input");
+    const actor = inventoryActor();
+    if (input && actor?.isOwner) changeCoin(actor, input.dataset.coin, { absolute: Number(input.value) || 0 }, input);
+  });
   body.addEventListener("dragstart", event => onDragStart(event, body));
   body.addEventListener("dragover", event => {
     event.preventDefault();
@@ -331,6 +373,9 @@ const showInventory = floatingWindow({
         <input type="search" class="ci-search" placeholder="Cerca…" aria-label="Cerca un oggetto">
         <button type="button" data-action="new-item" title="Nuovo oggetto"><i class="fas fa-plus"></i> Oggetto</button>
         <button type="button" data-action="new-folder" title="Nuova cartella"><i class="fas fa-folder-plus"></i> Cartella</button>
+      </div>
+      <div class="ci-coins" title="Monete del gruppo, da dividere. Clic sul nome: +1, clic destro: −1 (Maiusc: 10)">
+        ${COINS.map(coin => `<label class="ci-coin"><span class="ci-coin-label" data-coin="${coin.id}">${coin.label}</span><input type="number" min="0" step="1" data-coin="${coin.id}" value="0"></label>`).join("")}
       </div>
       <ul class="ci-list"></ul>
     </div>`,

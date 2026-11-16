@@ -263,6 +263,47 @@
   padding: 3px 7px;
 }
 
+/* The party's money: one row of four fields under the toolbar. */
+.ci-coins {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid #38333c;
+}
+
+.ci-coin {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ci-coin-label {
+  font-size: 12px;
+  color: #b9b2a8;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ci-coin-label:hover {
+  color: #e06a5a;
+}
+
+.ci-panel .ci-coin input {
+  width: 100%;
+  padding: 2px 4px;
+  text-align: right;
+  -moz-appearance: textfield;
+}
+
+.ci-coin input::-webkit-outer-spin-button,
+.ci-coin input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 .ci-list,
 .ci-list ul {
   margin: 0;

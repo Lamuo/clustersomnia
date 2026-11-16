@@ -1,4 +1,7 @@
 {
+  "DL.WealthCoinsCP": "Rame",
+  "DL.WealthCoinsGC": "Oro",
+  "DL.WealthCoinsSS": "Argento",
   "DL.CharCorruption": "Corallo Bianco",
   "DL.CharInsanity": "Incubo",
   "DL.CharRolCorruption": "Corallo Bianco",
@@ -47,7 +50,8 @@
   "CLUSTERSOMNIA.CardAdvanced": "Avanzata",
   "CLUSTERSOMNIA.CardAdvancedHint": "Card avanzata (si espande cliccando il ritratto)",
   "CLUSTERSOMNIA.CardTags": "Tag",
-  "CLUSTERSOMNIA.PrimaryAttributeHint": "Pari merito per il valore più alto: usa questa come specializzazione",
+  "CLUSTERSOMNIA.PrimaryAttributeActive": "Specializzazione attiva: {name}",
+  "CLUSTERSOMNIA.PrimaryAttributePick": "Scegli specializzazione: {name}",
   "CLUSTERSOMNIA.NewCounter": "Nuovo contatore",
   "CLUSTERSOMNIA.EffectsConfigTitle": "Configura effetti mostrati",
   "CLUSTERSOMNIA.NoEffects": "Nessun effetto trovato su questo personaggio.",
