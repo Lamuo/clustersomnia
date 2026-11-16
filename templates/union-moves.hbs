@@ -1,0 +1,53 @@
+<div class="sotdl-union-config">
+  <header class="suc-base">
+    <p>Trascina un oggetto da un compendio (talento, magia, arma…) sulla cella di una coppia. Quando la coppia usa la mossa dal meter, l'oggetto viene usato normalmente e finisce in chat.</p>
+  </header>
+
+  {{#if columns.length}}
+  <div class="suc-scroll">
+    <table class="suc-matrix">
+      <thead>
+        <tr>
+          <td></td>
+          {{#each columns as |actor|}}
+          <th scope="col" title="{{actor.name}}">
+            <div class="suc-who"><img src="{{actor.img}}" alt=""><span>{{actor.short}}</span></div>
+          </th>
+          {{/each}}
+        </tr>
+      </thead>
+      <tbody>
+        {{#each rows as |row|}}
+        <tr>
+          <th scope="row" title="{{row.actor.name}}">
+            <div class="suc-who"><img src="{{row.actor.img}}" alt=""><span>{{row.actor.short}}</span></div>
+          </th>
+          {{#each row.cells as |cell|}}
+          {{#if cell.key}}
+          <td class="suc-cell">
+            <div class="sum-drop{{#if cell.move}} filled{{/if}}" data-pair="{{cell.key}}" title="{{cell.label}}{{#if cell.move}}: {{cell.move.name}}{{else}}: trascina qui una mossa{{/if}}">
+              {{#if cell.move}}
+              <button type="button" class="sum-open" data-action="openMove" title="Apri {{cell.move.name}}"><img src="{{cell.move.img}}" alt=""></button>
+              <button type="button" class="sum-clear" data-action="clearMove" title="Togli la mossa" aria-label="Togli la mossa di {{cell.label}}"><i class="fas fa-xmark"></i></button>
+              {{else}}
+              <i class="fas fa-plus"></i>
+              {{/if}}
+            </div>
+          </td>
+          {{else}}
+          <td class="suc-void"></td>
+          {{/if}}
+          {{/each}}
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{else}}
+  <p class="suc-empty">Servono almeno due PG: personaggi con il talento "Punti Unione".</p>
+  {{/if}}
+
+  <footer class="suc-footer">
+    <button type="button" data-action="close">Chiudi</button>
+  </footer>
+</div>
