@@ -100,5 +100,10 @@
   "CLUSTERSOMNIA.WeaponSize.AddSize": "Aggiungi una taglia",
   "CLUSTERSOMNIA.WeaponSize.Remove": "Rimuovi",
   "DL.ExtraEffect": "Effetto Extra",
-  "DL.ExtraEffect20": "Effetto Extra 20+"
+  "DL.ExtraEffect20": "Effetto Extra 20+",
+  "CLUSTERSOMNIA.GmConsole.Name": "Console GM",
+  "CLUSTERSOMNIA.GmConsole.Label": "Scegli chi può usare gm()",
+  "CLUSTERSOMNIA.GmConsole.Hint": "I giocatori elencati qui possono eseguire codice come GM dalla console del browser con gm(...). Possono fare tutto ciò che fa il GM, senza conferma.",
+  "CLUSTERSOMNIA.GmConsole.Warning": "Gli utenti abilitati possono eseguire qualsiasi codice come GM con gm(), senza conferma. Scegli solo persone di cui ti fidi su tutto il mondo.",
+  "CLUSTERSOMNIA.GmConsole.Save": "Salva"
 }

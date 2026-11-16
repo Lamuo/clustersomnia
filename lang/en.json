@@ -81,5 +81,10 @@
   "CLUSTERSOMNIA.WeaponSize.WithThisWeapon": "With this weapon:",
   "CLUSTERSOMNIA.WeaponSize.Size": "Size",
   "CLUSTERSOMNIA.WeaponSize.AddSize": "Add a size",
-  "CLUSTERSOMNIA.WeaponSize.Remove": "Remove"
+  "CLUSTERSOMNIA.WeaponSize.Remove": "Remove",
+  "CLUSTERSOMNIA.GmConsole.Name": "GM console",
+  "CLUSTERSOMNIA.GmConsole.Label": "Choose who can use gm()",
+  "CLUSTERSOMNIA.GmConsole.Hint": "Players listed here can run code as the GM from their browser console with gm(...). They can do anything the GM can, with no confirmation.",
+  "CLUSTERSOMNIA.GmConsole.Warning": "Allowed users can run any code as the GM with gm(), with no confirmation. Only pick people you trust with the whole world.",
+  "CLUSTERSOMNIA.GmConsole.Save": "Save"
 }

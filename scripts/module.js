@@ -1,5 +1,6 @@
 import "./folder-permissions.js";
 import "./folder-relay.js";
+import "./gm-console.js";
 import "./compendium-filters.js";
 import "./union-meter.js";
 import "./combat-party.js";
